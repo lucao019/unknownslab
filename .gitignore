@@ -1,2 +1,4 @@
 .env
 node_modules/
+control-center/node_modules/
+control-center/dist/

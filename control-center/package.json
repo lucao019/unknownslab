@@ -1,0 +1,66 @@
+{
+  "name": "unknowns-lab-control-center",
+  "version": "0.1.0",
+  "description": "Unknowns Lab — Control Center desktop para ferramentas de live e análise de inputs do PUBG",
+  "main": "electron.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder --win --x64"
+  },
+  "keywords": [],
+  "dependencies": {
+    "electron-store": "^10.0.1"
+  },
+  "devDependencies": {
+    "electron": "^34.3.0",
+    "electron-builder": "^26.15.3"
+  },
+  "allowScripts": {
+    "electron@34.5.8": true,
+    "electron-builder@26.0.12": true,
+    "electron-winstaller@5.4.0": true
+  },
+  "build": {
+    "appId": "com.lucao.unknowns-lab",
+    "productName": "Unknowns Lab",
+    "directories": {
+      "output": "H:\\Unknowns-Lab-Build"
+    },
+    "files": [
+      "electron.js",
+      "preload.js",
+      "src/**/*",
+      "node_modules/**/*",
+      "!node_modules/.cache/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "src/assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Unknowns Lab"
+    },
+    "portable": {
+      "artifactName": "Unknowns-Lab-portable.exe"
+    }
+  }
+}

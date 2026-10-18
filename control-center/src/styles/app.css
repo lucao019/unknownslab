@@ -1,0 +1,23 @@
+/* =========================================================
+   APP.CSS — estilos específicos de layout não cobertos
+   pelo design system
+========================================================= */
+
+/* Garante que o Inter carregue com fallback correto */
+body {
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+/* Ajuste fino do grid de módulos em telas menores */
+@media (max-width: 960px) {
+    .module-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
+/* Linha de separação na sidebar antes do footer */
+.sidebar__footer {
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 12px 16px;
+}

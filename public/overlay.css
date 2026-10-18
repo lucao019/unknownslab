@@ -117,24 +117,41 @@ body {
 
 
 /* ==============================
-   ARMA
+   ARMA - TREE VIEW
 ============================== */
 
 .weapon {
     min-width: 170px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
+/* NOME DA ARMA */
 .weapon strong {
+    position: relative;
+    z-index: 5;
+
+    display: block;
+
     font-size: 36px;
+    line-height: 1;
 
     letter-spacing: -2px;
+
+    text-align: center;
 }
 
+/* KILLS DA ARMA */
 .weapon small {
     position: relative;
     z-index: 5;
 
-    margin-top: 3px;
+    display: block;
+
+    margin-top: 5px;
 
     font-family: Georgia, serif;
 
@@ -142,6 +159,8 @@ body {
     font-weight: bold;
 
     letter-spacing: 2px;
+
+    text-align: center;
 
     color: #999;
 

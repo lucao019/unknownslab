@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'">
+    <title>Unknowns Lab — Control Center</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles/design-system.css">
+    <link rel="stylesheet" href="styles/app.css">
+</head>
+<body>
+
+    <!-- TITLEBAR CUSTOMIZADA -->
+    <header class="titlebar" id="titlebar">
+        <div class="titlebar__brand">
+            <div class="titlebar__brand-dot"></div>
+            <span class="titlebar__brand-name">Unknowns Lab</span>
+        </div>
+        <div class="titlebar__controls">
+            <button class="titlebar__btn" id="btn-minimize" title="Minimizar">
+                <!-- Lucide: minus -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="titlebar__btn" id="btn-maximize" title="Maximizar">
+                <!-- Lucide: square -->
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </button>
+            <button class="titlebar__btn titlebar__btn--close" id="btn-close" title="Fechar">
+                <!-- Lucide: x -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- LAYOUT PRINCIPAL -->
+    <div class="app">
+
+        <!-- SIDEBAR -->
+        <nav class="sidebar" id="sidebar">
+
+            <div class="sidebar__section">
+                <p class="sidebar__section-label">Geral</p>
+                <ul class="sidebar__nav">
+                    <li class="sidebar__nav-item">
+                        <a class="sidebar__nav-link active" data-page="dashboard" href="#">
+                            <!-- Lucide: layout-dashboard -->
+                            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                            Dashboard
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar__divider"></div>
+
+            <div class="sidebar__section">
+                <p class="sidebar__section-label">Módulos</p>
+                <ul class="sidebar__nav">
+                    <li class="sidebar__nav-item">
+                        <a class="sidebar__nav-link" data-page="overlay" href="#">
+                            <!-- Lucide: layers -->
+                            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                            Overlay
+                        </a>
+                    </li>
+                    <li class="sidebar__nav-item">
+                        <a class="sidebar__nav-link" data-page="movement" href="#">
+                            <!-- Lucide: move -->
+                            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+                            Movement Lab
+                        </a>
+                    </li>
+                    <li class="sidebar__nav-item">
+                        <a class="sidebar__nav-link" data-page="analysis" href="#">
+                            <!-- Lucide: activity -->
+                            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            Input Analysis
+                        </a>
+                    </li>
+                    <li class="sidebar__nav-item">
+                        <a class="sidebar__nav-link" data-page="streaming" href="#">
+                            <!-- Lucide: radio -->
+                            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M7.76 7.76a6 6 0 0 0 0 8.49"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/></svg>
+                            Streaming
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar__divider"></div>
+
+            <div class="sidebar__section">
+                <ul class="sidebar__nav">
+                    <li class="sidebar__nav-item">
+                        <a class="sidebar__nav-link" data-page="settings" href="#">
+                            <!-- Lucide: settings -->
+                            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar__footer">
+                <strong>v0.1.0</strong> — Fase 1
+            </div>
+
+        </nav>
+
+        <!-- CONTEÚDO -->
+        <main class="main-content" id="main-content">
+
+            <!-- DASHBOARD -->
+            <section class="page active" id="page-dashboard">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-header__title">Dashboard</h1>
+                        <p class="page-header__subtitle">Estado geral dos módulos do Unknowns Lab</p>
+                    </div>
+                </div>
+
+                <!-- Stat cards -->
+                <div class="stat-grid" id="dashboard-stats">
+                    <div class="stat-card">
+                        <p class="stat-card__label">Módulos Ativos</p>
+                        <p class="stat-card__value stat-card__value--on" id="stat-active">0</p>
+                        <p class="stat-card__sub">de <span id="stat-total">0</span> disponíveis</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-card__label">Indisponíveis</p>
+                        <p class="stat-card__value" id="stat-unavailable">0</p>
+                        <p class="stat-card__sub">aguardando implementação</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-card__label">Erros</p>
+                        <p class="stat-card__value" id="stat-errors">0</p>
+                        <p class="stat-card__sub">módulos com falha</p>
+                    </div>
+                </div>
+
+                <!-- Módulos ativos -->
+                <div>
+                    <p class="section-title">Módulos Ativos</p>
+                    <div class="module-grid" id="dashboard-active-grid">
+                        <div class="empty-state">
+                            <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <p class="empty-state__text">Nenhum módulo ativo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Módulos com erro -->
+                <div id="dashboard-error-section" style="display:none">
+                    <p class="section-title">Módulos com Erro</p>
+                    <div class="module-grid" id="dashboard-error-grid"></div>
+                </div>
+
+            </section>
+
+            <!-- OVERLAY -->
+            <section class="page" id="page-overlay">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-header__title">Overlay</h1>
+                        <p class="page-header__subtitle">Elementos visuais para OBS Studio</p>
+                    </div>
+                    <div class="search-bar">
+                        <svg class="search-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input class="search-bar__input" type="text" placeholder="Buscar módulo..." id="search-overlay">
+                    </div>
+                </div>
+                <div class="module-grid" id="grid-overlay"></div>
+            </section>
+
+            <!-- MOVEMENT -->
+            <section class="page" id="page-movement">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-header__title">Movement Lab</h1>
+                        <p class="page-header__subtitle">Exercícios e análise de movimentação PUBG</p>
+                    </div>
+                </div>
+                <div class="module-grid" id="grid-movement"></div>
+            </section>
+
+            <!-- ANALYSIS -->
+            <section class="page" id="page-analysis">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-header__title">Input Analysis</h1>
+                        <p class="page-header__subtitle">Gravação e análise de sessões de input</p>
+                    </div>
+                </div>
+                <div class="module-grid" id="grid-analysis"></div>
+            </section>
+
+            <!-- STREAMING -->
+            <section class="page" id="page-streaming">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-header__title">Streaming</h1>
+                        <p class="page-header__subtitle">Integração com OBS e modo tutorial</p>
+                    </div>
+                </div>
+                <div class="module-grid" id="grid-streaming"></div>
+            </section>
+
+            <!-- SETTINGS -->
+            <section class="page" id="page-settings">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-header__title">Settings</h1>
+                        <p class="page-header__subtitle">Configurações globais do Control Center</p>
+                    </div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 13px;">
+                    Configurações individuais de cada módulo ficam acessíveis pelo botão ⚙ do card correspondente.
+                    Esta seção conterá preferências globais em versão futura.
+                </p>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="ui/app.js"></script>
+
+</body>
+</html>
