@@ -30,7 +30,7 @@ const MODULE_REGISTRY = [
         category: "overlay",
         icon: "keyboard",
         dependencies: [],
-        implemented: false,
+        implemented: true,
         defaultConfig: {
             position: { x: 20, y: 20 },
             theme: "dark",

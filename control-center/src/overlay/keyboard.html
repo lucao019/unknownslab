@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+    <title>Unknowns Lab — Keyboard Overlay</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        /* ── LAYOUT ── */
+        .kb {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 10px;
+            /* sem fundo — transparente */
+        }
+
+        .kb__row {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        /* ── TECLA BASE ── */
+        .key {
+            width: 46px;
+            height: 46px;
+            border-radius: 8px;
+            border: 1.5px solid rgba(255,255,255,0.12);
+            background: rgba(10, 10, 12, 0.72);
+            backdrop-filter: blur(4px);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-family: "Segoe UI", system-ui, sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            color: rgba(255,255,255,0.35);
+
+            transition:
+                background 100ms ease,
+                border-color 100ms ease,
+                color 100ms ease,
+                transform 80ms ease,
+                box-shadow 100ms ease;
+
+            user-select: none;
+        }
+
+        /* SPACE mais largo */
+        .key--space {
+            width: 150px;
+            font-size: 10px;
+            letter-spacing: 0.12em;
+        }
+
+        /* SHIFT mais largo */
+        .key--wide {
+            width: 70px;
+        }
+
+        /* ── TECLA PRESSIONADA ── */
+        .key.active {
+            background: rgba(245, 197, 24, 0.92);
+            border-color: rgba(255, 220, 80, 0.9);
+            color: #0d0d0f;
+            transform: scale(0.93);
+            box-shadow:
+                0 0 12px rgba(245, 197, 24, 0.6),
+                0 0 24px rgba(245, 197, 24, 0.25);
+        }
+
+        /* ── TECLA SOLTANDO (fade out) ── */
+        .key.releasing {
+            background: rgba(245, 197, 24, 0.35);
+            border-color: rgba(245, 197, 24, 0.4);
+            color: rgba(245, 197, 24, 0.8);
+            transform: scale(1);
+            box-shadow: 0 0 8px rgba(245, 197, 24, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="kb" id="kb">
+
+    <!-- Linha 1: Q W E R -->
+    <div class="kb__row">
+        <div class="key" data-key="Q">Q</div>
+        <div class="key" data-key="W">W</div>
+        <div class="key" data-key="E">E</div>
+        <div class="key" data-key="R">R</div>
+        <div class="key" data-key="T">T</div>
+    </div>
+
+    <!-- Linha 2: A S D F G -->
+    <div class="kb__row">
+        <div class="key" data-key="A">A</div>
+        <div class="key" data-key="S">S</div>
+        <div class="key" data-key="D">D</div>
+        <div class="key" data-key="F">F</div>
+        <div class="key" data-key="G">G</div>
+    </div>
+
+    <!-- Linha 3: SHIFT Z C V B M -->
+    <div class="kb__row">
+        <div class="key key--wide" data-key="SHIFT">SHIFT</div>
+        <div class="key" data-key="Z">Z</div>
+        <div class="key" data-key="C">C</div>
+        <div class="key" data-key="V">V</div>
+        <div class="key" data-key="B">B</div>
+        <div class="key" data-key="M">M</div>
+    </div>
+
+    <!-- Linha 4: CTRL SPACE TAB ESC -->
+    <div class="kb__row">
+        <div class="key key--wide" data-key="CTRL">CTRL</div>
+        <div class="key key--space" data-key="SPACE">SPACE</div>
+        <div class="key" data-key="TAB">TAB</div>
+        <div class="key" data-key="ESC">ESC</div>
+    </div>
+
+</div>
+
+<script src="keyboard-overlay.js"></script>
+</body>
+</html>

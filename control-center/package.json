@@ -11,7 +11,8 @@
   },
   "keywords": [],
   "dependencies": {
-    "electron-store": "^10.0.1"
+    "electron-store": "^10.0.1",
+    "uiohook-napi": "^1.5.5"
   },
   "devDependencies": {
     "electron": "^34.3.0",
@@ -20,7 +21,8 @@
   "allowScripts": {
     "electron@34.5.8": true,
     "electron-builder@26.0.12": true,
-    "electron-winstaller@5.4.0": true
+    "electron-winstaller@5.4.0": true,
+    "uiohook-napi@1.5.5": true
   },
   "build": {
     "appId": "com.lucao.unknowns-lab",

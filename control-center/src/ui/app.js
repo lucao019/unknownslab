@@ -21,7 +21,7 @@
 ────────────────────────────────────────────────────────── */
 
 const REGISTRY = [
-    { id: "keyboard-visualizer",  name: "Keyboard Visualizer",  desc: "Exibe as teclas pressionadas em tempo real na overlay do OBS.", category: "overlay",   icon: "keyboard",        implemented: false },
+    { id: "keyboard-visualizer",  name: "Keyboard Visualizer",  desc: "Exibe as teclas pressionadas em tempo real na overlay do OBS.", category: "overlay",   icon: "keyboard",        implemented: true  },
     { id: "mouse-visualizer",     name: "Mouse Visualizer",     desc: "Exibe cliques, botões laterais e scroll do mouse na overlay.", category: "overlay",   icon: "mouse-pointer-2", implemented: false },
     { id: "keystroke-history",    name: "Keystroke History",    desc: "Histórico das últimas teclas pressionadas, em faixa deslizante.", category: "overlay", icon: "history",         implemented: false },
     { id: "pubg-stats-overlay",   name: "PUBG Stats Overlay",   desc: "Exibe kills, damage, partidas e arma preferida via servidor local.", category: "overlay", icon: "bar-chart-2", implemented: true  },
@@ -166,32 +166,38 @@ function refreshCard(id) {
 
 /* ──────────────────────────────────────────────────────────
    TOGGLE HANDLER
-   Na Fase 1, pubg-stats-overlay verifica o servidor real.
-   Os demais são UNAVAILABLE — o toggle é desabilitado.
+   Módulos com IPC real: pubg-stats-overlay, keyboard-visualizer
+   Os demais são UNAVAILABLE — toggle desabilitado.
 ────────────────────────────────────────────────────────── */
+
+/* Módulos que usam IPC com o processo main */
+const IPC_MODULES = new Set(["keyboard-visualizer", "pubg-stats-overlay"]);
 
 async function handleToggle(id) {
     const current = uiState[id];
 
-    if (current === "OFF") {
+    if (current === "OFF" || current === "ERROR") {
 
         uiState[id] = "STARTING";
         refreshCard(id);
 
         try {
-            /* pubg-stats-overlay: tenta alcançar o servidor */
-            if (id === "pubg-stats-overlay") {
+            if (IPC_MODULES.has(id)) {
+                /* Módulo com serviço real no processo main */
+                const result = await window.electronAPI?.moduleStart(id);
+                if (!result?.ok) throw new Error(result?.error ?? "Falha ao iniciar.");
+            } else if (id === "pubg-stats-overlay") {
                 const res = await fetch("http://localhost:5051/api/hoje");
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                if (!res.ok) throw new Error(`Servidor retornou HTTP ${res.status}`);
             } else {
                 throw new Error("Módulo ainda não implementado.");
             }
 
             uiState[id] = "ON";
+            delete uiState[`${id}__error`];
 
         } catch (err) {
             uiState[id] = "ERROR";
-            /* Guarda mensagem para o card */
             uiState[`${id}__error`] = err.message;
         }
 
@@ -200,14 +206,13 @@ async function handleToggle(id) {
         uiState[id] = "STOPPING";
         refreshCard(id);
 
-        /* Simula stop assíncrono */
-        await new Promise(r => setTimeout(r, 200));
-        uiState[id] = "OFF";
+        try {
+            if (IPC_MODULES.has(id)) {
+                await window.electronAPI?.moduleStop(id);
+            }
+        } catch (_) { /* ignora falha no stop */ }
 
-    } else if (current === "ERROR") {
-
         uiState[id] = "OFF";
-        delete uiState[`${id}__error`];
 
     }
 

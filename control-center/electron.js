@@ -1,5 +1,5 @@
 /* =========================================================
-   PUBG INPUT LAB — Control Center
+   UNKNOWNS LAB — Control Center
    Processo Main do Electron
 ========================================================= */
 
@@ -8,13 +8,18 @@ const path = require("path");
 
 const isDev = process.argv.includes("--dev");
 
-let mainWindow = null;
+let mainWindow   = null;
+let kbOverlay    = null;  // janela overlay do Keyboard Visualizer
+
+/* ── Serviços (carregados sob demanda) ─────────────────── */
+const kbService = require("./src/services/keyboard-visualizer.js");
+
 
 /* ---------------------------------------------------------
-   CRIAÇÃO DA JANELA PRINCIPAL
+   JANELA PRINCIPAL
 --------------------------------------------------------- */
 
-function createWindow() {
+function createMainWindow() {
 
     mainWindow = new BrowserWindow({
         width: 1100,
@@ -28,7 +33,7 @@ function createWindow() {
 
         title: "Unknowns Lab — Control Center",
 
-        icon: path.join(__dirname, "src", "assets", "icon.png"),
+        icon: path.join(__dirname, "src", "assets", "icon.ico"),
 
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
@@ -43,41 +48,116 @@ function createWindow() {
     );
 
     if (isDev) {
-        mainWindow.webContents.openDevTools({
-            mode: "detach"
-        });
+        mainWindow.webContents.openDevTools({ mode: "detach" });
     }
 
     mainWindow.on("closed", () => {
         mainWindow = null;
     });
-
 }
 
 
 /* ---------------------------------------------------------
-   CONTROLES DA JANELA (via IPC — titlebar customizada)
+   JANELA OVERLAY — KEYBOARD VISUALIZER
+   Transparente, sem borda, sempre no topo.
 --------------------------------------------------------- */
 
-ipcMain.on("window:minimize", () => {
-    mainWindow?.minimize();
-});
+function createKbOverlay() {
+
+    kbOverlay = new BrowserWindow({
+        width: 400,
+        height: 230,
+
+        frame: false,
+        transparent: true,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        resizable: false,
+
+        /* Posição padrão: canto inferior esquerdo */
+        x: 20,
+        y: 820,
+
+        title: "Unknowns Lab — Keyboard",
+
+        webPreferences: {
+            preload: path.join(__dirname, "src", "overlay", "keyboard-preload.js"),
+            contextIsolation: true,
+            nodeIntegration: false,
+            devTools: isDev
+        }
+    });
+
+    kbOverlay.loadFile(
+        path.join(__dirname, "src", "overlay", "keyboard.html")
+    );
+
+    kbOverlay.on("closed", () => {
+        kbOverlay = null;
+    });
+
+    /* Registra callback para enviar eventos de tecla para a overlay */
+    kbService.setKeyEventCallback((event) => {
+        if (kbOverlay && !kbOverlay.isDestroyed()) {
+            kbOverlay.webContents.send("key-event", event);
+        }
+    });
+}
+
+
+/* ---------------------------------------------------------
+   IPC — CONTROLES DA JANELA PRINCIPAL
+--------------------------------------------------------- */
+
+ipcMain.on("window:minimize", () => mainWindow?.minimize());
 
 ipcMain.on("window:maximize", () => {
-    if (mainWindow?.isMaximized()) {
-        mainWindow.unmaximize();
-    } else {
-        mainWindow?.maximize();
+    if (mainWindow?.isMaximized()) mainWindow.unmaximize();
+    else mainWindow?.maximize();
+});
+
+ipcMain.on("window:close", () => mainWindow?.close());
+
+ipcMain.on("shell:open-external", (_e, url) => shell.openExternal(url));
+
+
+/* ---------------------------------------------------------
+   IPC — MÓDULOS
+   O renderer envia "module:start" / "module:stop"
+   e recebe "module:state" com o novo estado.
+--------------------------------------------------------- */
+
+ipcMain.handle("module:start", async (_e, id) => {
+    try {
+        if (id === "keyboard-visualizer") {
+            createKbOverlay();
+            await kbService.start();
+        }
+        return { ok: true };
+    } catch (err) {
+        return { ok: false, error: err.message };
     }
 });
 
-ipcMain.on("window:close", () => {
-    mainWindow?.close();
+ipcMain.handle("module:stop", async (_e, id) => {
+    try {
+        if (id === "keyboard-visualizer") {
+            await kbService.stop();
+            if (kbOverlay && !kbOverlay.isDestroyed()) {
+                kbOverlay.close();
+            }
+        }
+        return { ok: true };
+    } catch (err) {
+        return { ok: false, error: err.message };
+    }
 });
 
-/* Abre links externos no navegador padrão, não no Electron */
-ipcMain.on("shell:open-external", (_event, url) => {
-    shell.openExternal(url);
+ipcMain.handle("module:status", (_e, id) => {
+    if (id === "keyboard-visualizer") {
+        return kbService.getStatus();
+    }
+    return null;
 });
 
 
@@ -85,14 +165,13 @@ ipcMain.on("shell:open-external", (_event, url) => {
    CICLO DE VIDA
 --------------------------------------------------------- */
 
-app.whenReady().then(createWindow);
+app.whenReady().then(createMainWindow);
 
-app.on("window-all-closed", () => {
+app.on("window-all-closed", async () => {
+    await kbService.stop().catch(() => {});
     app.quit();
 });
 
 app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
-    }
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
 });

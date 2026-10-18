@@ -15,7 +15,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     /* Abrir URL no navegador externo */
     openExternal: (url) => ipcRenderer.send("shell:open-external", url),
 
-    /* Versão do app */
-    getVersion: () => ipcRenderer.invoke("app:version")
+    /* Módulos — ciclo de vida real via IPC */
+    moduleStart:  (id) => ipcRenderer.invoke("module:start", id),
+    moduleStop:   (id) => ipcRenderer.invoke("module:stop", id),
+    moduleStatus: (id) => ipcRenderer.invoke("module:status", id),
 
 });
