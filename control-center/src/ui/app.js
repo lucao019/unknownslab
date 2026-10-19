@@ -22,7 +22,7 @@
 
 const REGISTRY = [
     { id: "keyboard-visualizer",  name: "Keyboard Visualizer",  desc: "Exibe as teclas pressionadas em tempo real na overlay do OBS.", category: "overlay",   icon: "keyboard",        implemented: true  },
-    { id: "mouse-visualizer",     name: "Mouse Visualizer",     desc: "Exibe cliques, botões laterais e scroll do mouse na overlay.", category: "overlay",   icon: "mouse-pointer-2", implemented: false },
+    { id: "mouse-visualizer",     name: "Mouse Visualizer",     desc: "Exibe cliques, botões laterais e scroll do mouse na overlay.", category: "overlay",   icon: "mouse-pointer-2", implemented: true  },
     { id: "keystroke-history",    name: "Keystroke History",    desc: "Histórico das últimas teclas pressionadas, em faixa deslizante.", category: "overlay", icon: "history",         implemented: false },
     { id: "pubg-stats-overlay",   name: "PUBG Stats Overlay",   desc: "Exibe kills, damage, partidas e arma preferida via servidor local.", category: "overlay", icon: "bar-chart-2", implemented: true  },
     { id: "movement-wasd",        name: "WASD Trainer",         desc: "Exercícios de movimentação básica com visualização de sequência.", category: "movement", icon: "move",         implemented: false },
@@ -171,7 +171,7 @@ function refreshCard(id) {
 ────────────────────────────────────────────────────────── */
 
 /* Módulos que usam IPC com o processo main */
-const IPC_MODULES = new Set(["keyboard-visualizer", "pubg-stats-overlay"]);
+const IPC_MODULES = new Set(["keyboard-visualizer", "mouse-visualizer", "pubg-stats-overlay"]);
 
 async function handleToggle(id) {
     const current = uiState[id];

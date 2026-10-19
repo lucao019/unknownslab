@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+    <title>Unknowns Lab — Mouse Overlay</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── CORPO DO MOUSE ── */
+        .mouse {
+            position: relative;
+            width: 80px;
+            height: 120px;
+        }
+
+        /* Silhueta */
+        .mouse__body {
+            position: absolute;
+            inset: 0;
+            border-radius: 40px 40px 36px 36px;
+            border: 2px solid rgba(255,255,255,0.12);
+            background: rgba(10, 10, 12, 0.72);
+            backdrop-filter: blur(4px);
+            overflow: hidden;
+        }
+
+        /* Linha divisória centro */
+        .mouse__divider {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 1.5px;
+            height: 52%;
+            background: rgba(255,255,255,0.10);
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        /* ── BOTÕES LMB / RMB ── */
+        .mouse__btn {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 52%;
+            transition:
+                background 100ms ease,
+                box-shadow 100ms ease;
+        }
+
+        .mouse__btn--lmb {
+            left: 0;
+            border-radius: 38px 0 0 0;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .mouse__btn--rmb {
+            right: 0;
+            border-radius: 0 38px 0 0;
+            background: rgba(255,255,255,0.04);
+        }
+
+        /* ── SCROLL WHEEL ── */
+        .mouse__wheel {
+            position: absolute;
+            left: 50%;
+            top: 16%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 26px;
+            border-radius: 6px;
+            border: 1.5px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.06);
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 0;
+            overflow: hidden;
+            transition: border-color 100ms ease;
+        }
+
+        .mouse__scroll-up,
+        .mouse__scroll-down {
+            width: 5px;
+            height: 5px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.15);
+            transition: background 100ms ease, box-shadow 100ms ease;
+        }
+
+        /* ── MMB (clique no scroll) ── */
+        .mouse__wheel.active {
+            border-color: rgba(245, 197, 24, 0.8);
+            background: rgba(245, 197, 24, 0.2);
+        }
+
+        /* ── BOTÕES LATERAIS M4 / M5 ── */
+        .mouse__side {
+            position: absolute;
+            right: -10px;
+            width: 8px;
+            height: 22px;
+            border-radius: 0 4px 4px 0;
+            background: rgba(255,255,255,0.06);
+            border: 1.5px solid rgba(255,255,255,0.10);
+            transition: background 100ms ease, border-color 100ms ease;
+        }
+
+        .mouse__side--m4 { top: 38%; }
+        .mouse__side--m5 { top: 56%; }
+
+        /* ── LABELS ── */
+        .mouse__label {
+            position: absolute;
+            bottom: 14%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.2);
+            white-space: nowrap;
+            z-index: 4;
+            text-align: center;
+            min-height: 12px;
+            transition: color 150ms ease;
+        }
+
+        /* ── ESTADO ATIVO ── */
+        .active-lmb .mouse__btn--lmb,
+        .active-rmb .mouse__btn--rmb {
+            background: rgba(245, 197, 24, 0.85) !important;
+            box-shadow: inset 0 0 16px rgba(245,197,24,0.4),
+                        0 0 12px rgba(245,197,24,0.5);
+        }
+
+        .active-scroll-up   .mouse__scroll-up,
+        .active-scroll-down .mouse__scroll-down {
+            background: rgba(245, 197, 24, 0.9);
+            box-shadow: 0 0 6px rgba(245,197,24,0.8);
+        }
+
+        .active-m4 .mouse__side--m4,
+        .active-m5 .mouse__side--m5 {
+            background: rgba(245, 197, 24, 0.85);
+            border-color: rgba(245, 197, 24, 0.8);
+        }
+
+        /* ── FADE OUT (releasing) ── */
+        .releasing-lmb .mouse__btn--lmb,
+        .releasing-rmb .mouse__btn--rmb {
+            background: rgba(245, 197, 24, 0.25) !important;
+        }
+
+        .releasing-m4 .mouse__side--m4,
+        .releasing-m5 .mouse__side--m5 {
+            background: rgba(245, 197, 24, 0.25);
+        }
+
+        /* Scroll arrow indicator */
+        .scroll-arrow {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            color: rgba(245, 197, 24, 0);
+            transition: color 100ms ease, opacity 100ms ease;
+            z-index: 5;
+            pointer-events: none;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        .scroll-arrow--up   { top: -18px; }
+        .scroll-arrow--down { bottom: 28%; }
+
+        .show-scroll-up   .scroll-arrow--up   { color: rgba(245,197,24,0.9); }
+        .show-scroll-down .scroll-arrow--down { color: rgba(245,197,24,0.9); }
+    </style>
+</head>
+<body>
+
+<div class="mouse" id="mouse">
+    <div class="mouse__body">
+        <div class="mouse__btn mouse__btn--lmb"></div>
+        <div class="mouse__btn mouse__btn--rmb"></div>
+        <div class="mouse__divider"></div>
+        <div class="mouse__wheel" id="wheel">
+            <span class="mouse__scroll-up"></span>
+            <span class="mouse__scroll-down"></span>
+        </div>
+        <div class="mouse__label" id="mouse-label"></div>
+    </div>
+    <div class="mouse__side mouse__side--m4"></div>
+    <div class="mouse__side mouse__side--m5"></div>
+
+    <span class="scroll-arrow scroll-arrow--up">▲</span>
+    <span class="scroll-arrow scroll-arrow--down">▼</span>
+</div>
+
+<script src="mouse-overlay.js"></script>
+</body>
+</html>

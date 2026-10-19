@@ -9,10 +9,12 @@ const path = require("path");
 const isDev = process.argv.includes("--dev");
 
 let mainWindow   = null;
-let kbOverlay    = null;  // janela overlay do Keyboard Visualizer
+let kbOverlay    = null;   // janela overlay do Keyboard Visualizer
+let mouseOverlay = null;   // janela overlay do Mouse Visualizer
 
-/* ── Serviços (carregados sob demanda) ─────────────────── */
-const kbService = require("./src/services/keyboard-visualizer.js");
+/* ── Serviços ───────────────────────────────────────────── */
+const kbService    = require("./src/services/keyboard-visualizer.js");
+const mouseService = require("./src/services/mouse-visualizer.js");
 
 
 /* ---------------------------------------------------------
@@ -106,7 +108,48 @@ function createKbOverlay() {
 
 
 /* ---------------------------------------------------------
-   IPC — CONTROLES DA JANELA PRINCIPAL
+   JANELA OVERLAY — MOUSE VISUALIZER
+--------------------------------------------------------- */
+
+function createMouseOverlay() {
+
+    mouseOverlay = new BrowserWindow({
+        width: 120,
+        height: 160,
+
+        frame: false,
+        transparent: true,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        resizable: false,
+
+        x: 20,
+        y: 580,
+
+        title: "Unknowns Lab — Mouse",
+
+        webPreferences: {
+            preload: path.join(__dirname, "src", "overlay", "mouse-preload.js"),
+            contextIsolation: true,
+            nodeIntegration: false,
+            devTools: isDev
+        }
+    });
+
+    mouseOverlay.loadFile(
+        path.join(__dirname, "src", "overlay", "mouse.html")
+    );
+
+    mouseOverlay.on("closed", () => { mouseOverlay = null; });
+
+    mouseService.setMouseEventCallback((event) => {
+        if (mouseOverlay && !mouseOverlay.isDestroyed()) {
+            mouseOverlay.webContents.send("mouse-event", event);
+        }
+    });
+}
+
+
 --------------------------------------------------------- */
 
 ipcMain.on("window:minimize", () => mainWindow?.minimize());
@@ -132,6 +175,9 @@ ipcMain.handle("module:start", async (_e, id) => {
         if (id === "keyboard-visualizer") {
             createKbOverlay();
             await kbService.start();
+        } else if (id === "mouse-visualizer") {
+            createMouseOverlay();
+            await mouseService.start();
         }
         return { ok: true };
     } catch (err) {
@@ -143,9 +189,10 @@ ipcMain.handle("module:stop", async (_e, id) => {
     try {
         if (id === "keyboard-visualizer") {
             await kbService.stop();
-            if (kbOverlay && !kbOverlay.isDestroyed()) {
-                kbOverlay.close();
-            }
+            if (kbOverlay && !kbOverlay.isDestroyed()) kbOverlay.close();
+        } else if (id === "mouse-visualizer") {
+            await mouseService.stop();
+            if (mouseOverlay && !mouseOverlay.isDestroyed()) mouseOverlay.close();
         }
         return { ok: true };
     } catch (err) {
@@ -154,9 +201,8 @@ ipcMain.handle("module:stop", async (_e, id) => {
 });
 
 ipcMain.handle("module:status", (_e, id) => {
-    if (id === "keyboard-visualizer") {
-        return kbService.getStatus();
-    }
+    if (id === "keyboard-visualizer") return kbService.getStatus();
+    if (id === "mouse-visualizer")    return mouseService.getStatus();
     return null;
 });
 
@@ -169,6 +215,7 @@ app.whenReady().then(createMainWindow);
 
 app.on("window-all-closed", async () => {
     await kbService.stop().catch(() => {});
+    await mouseService.stop().catch(() => {});
     app.quit();
 });
 
