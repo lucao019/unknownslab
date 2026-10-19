@@ -31,16 +31,9 @@
         });
     }
 
-    /* ── PIP — clique restaura, drag move a janela ── */
+    /* ── PIP — drag move a janela, clique SEM movimento restaura ── */
     if (pip) {
 
-        /* Clique simples restaura */
-        pip.addEventListener("click", (e) => {
-            if (e._wasDrag) return; // ignora se foi drag
-            show();
-        });
-
-        /* Drag no pip — move a janela via IPC */
         let pipDragging  = false;
         let pipDragMoved = false;
         let pipStartX    = 0;
@@ -52,6 +45,7 @@
             pipStartX    = e.screenX;
             pipStartY    = e.screenY;
             e.preventDefault();
+            e.stopPropagation();
         });
 
         document.addEventListener("mousemove", (e) => {
@@ -59,7 +53,8 @@
             const dx = e.screenX - pipStartX;
             const dy = e.screenY - pipStartY;
 
-            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+            /* Só conta como drag se moveu mais de 4px */
+            if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
                 pipDragMoved = true;
             }
 
@@ -70,14 +65,15 @@
             }
         });
 
-        document.addEventListener("mouseup", (e) => {
-            if (pipDragging && pipDragMoved) {
-                /* Marca o evento de click seguinte como drag */
-                e._wasDrag = true;
-                setTimeout(() => { delete e._wasDrag; }, 50);
-            }
+        document.addEventListener("mouseup", () => {
+            const wasDrag = pipDragMoved;
             pipDragging  = false;
             pipDragMoved = false;
+
+            /* Só restaura se NÃO foi drag */
+            if (!wasDrag) {
+                show();
+            }
         });
     }
 
