@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     pubgStatsData: () => ipcRenderer.invoke("pubg-stats:data"),
 
     /* Notificação quando overlay fecha pelo X */
-    onModuleClosed: (cb) => ipcRenderer.on("module:closed", (_e, id) => cb(id)),
+    onModuleClosed: (cb) => {
+        ipcRenderer.removeAllListeners("module:closed");
+        ipcRenderer.on("module:closed", (_e, id) => cb(id));
+    },
 
 });

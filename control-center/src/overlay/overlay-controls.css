@@ -1,6 +1,5 @@
 /* =========================================================
    OVERLAY CONTROLS — botões flutuantes discretos
-   Sem barra — só ícones aparecem no hover
 ========================================================= */
 
 /* ── WRAPPER ── */
@@ -9,54 +8,51 @@
     display: inline-flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 32px;
+    padding-top: 30px;
 }
 
-/* ── GRUPO DE BOTÕES — flutua acima do conteúdo ── */
+/* ── GRUPO DE BOTÕES ── */
 .overlay-bar {
     position: absolute;
     top: 2px;
     left: 50%;
-    transform: translateX(-50%) translateY(-4px) scale(0.9);
+    transform: translateX(-50%) translateY(-5px) scale(0.88);
 
     display: flex;
     align-items: center;
     gap: 6px;
 
     opacity: 0;
-    filter: blur(2px);
+    filter: blur(3px);
     pointer-events: none;
     user-select: none;
+    z-index: 10;
+    will-change: transform, opacity;
 
     transition:
         opacity   200ms cubic-bezier(0.34, 1.56, 0.64, 1),
         transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
         filter    160ms ease;
-
-    z-index: 10;
-    will-change: transform, opacity;
 }
 
-/* Aparece no hover do wrapper */
 .overlay-wrap:hover .overlay-bar {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
     filter: blur(0px);
     pointer-events: all;
-    transition-delay: 0ms;
 }
 
-/* Some ao tirar o mouse */
-.overlay-wrap:not(:hover) .overlay-bar:not(.pinned) {
+.overlay-wrap:not(:hover) .overlay-bar {
     opacity: 0;
-    transform: translateX(-50%) translateY(-3px) scale(0.92);
-    filter: blur(1px);
+    transform: translateX(-50%) translateY(-4px) scale(0.92);
+    filter: blur(2px);
     pointer-events: none;
     transition:
-        opacity   140ms ease,
-        transform 140ms ease,
+        opacity   130ms ease,
+        transform 130ms ease,
         filter    100ms ease;
 }
+
 
 /* ── BOTÃO BASE ── */
 .obar-btn {
@@ -64,63 +60,66 @@
     height: 24px;
     border-radius: 50%;
     border: none;
-    background: rgba(10, 10, 12, 0.70);
-    color: rgba(255,255,255,0.50);
+    background: rgba(8, 8, 10, 0.72);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(6px);
 
     transition:
-        background  130ms ease,
-        color       130ms ease,
+        background  120ms ease,
+        color       120ms ease,
         transform   130ms cubic-bezier(0.34, 1.56, 0.64, 1),
-        box-shadow  130ms ease;
+        box-shadow  120ms ease;
 
     will-change: transform;
 }
 
-.obar-btn:hover {
-    background: rgba(30, 30, 35, 0.90);
-    color: rgba(255,255,255,0.95);
-    transform: scale(1.20);
-}
-
 .obar-btn:active {
-    transform: scale(0.90);
-    transition-duration: 70ms;
+    transform: scale(0.88) !important;
+    transition-duration: 60ms;
 }
 
-/* Drag */
+/* ── DRAG — azul ciano ── */
 .obar-btn--drag {
+    color: rgba(100, 180, 255, 0.55);
     cursor: grab;
     -webkit-app-region: drag;
 }
+.obar-btn--drag:hover {
+    color: #64b4ff;
+    background: rgba(100, 180, 255, 0.15);
+    transform: scale(1.20);
+    box-shadow: 0 0 8px rgba(100, 180, 255, 0.35);
+}
 .obar-btn--drag:active { cursor: grabbing; }
 
-/* No-drag nos demais */
-.obar-btn--hide,
-.obar-btn--close {
+/* ── HIDE — amarelo ── */
+.obar-btn--hide {
+    color: rgba(245, 197, 24, 0.55);
     -webkit-app-region: no-drag;
 }
-
-/* Hide — amarelo */
 .obar-btn--hide:hover {
-    background: rgba(245,197,24,0.20);
     color: #f5c518;
-    box-shadow: 0 0 8px rgba(245,197,24,0.30);
+    background: rgba(245, 197, 24, 0.15);
+    transform: scale(1.20);
+    box-shadow: 0 0 8px rgba(245, 197, 24, 0.35);
 }
 
-/* Close — vermelho */
+/* ── CLOSE — vermelho ── */
+.obar-btn--close {
+    color: rgba(239, 68, 68, 0.55);
+    -webkit-app-region: no-drag;
+}
 .obar-btn--close:hover {
-    background: rgba(239,68,68,0.20);
     color: #ef4444;
-    box-shadow: 0 0 8px rgba(239,68,68,0.30);
+    background: rgba(239, 68, 68, 0.15);
+    transform: scale(1.20);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.35);
 }
 
-/* Remove o label — não tem mais */
 .obar-label { display: none; }
 
 
@@ -134,8 +133,8 @@
 }
 
 .overlay-wrap.is-hidden .overlay-bar {
-    opacity: 0;
-    pointer-events: none;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 .overlay-wrap.is-hidden .overlay-pip {
@@ -145,14 +144,16 @@
 }
 
 
-/* ── PIP — mira PUBG ── */
+/* ── PIP — mira PUBG em vermelho ── */
 .overlay-pip {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: rgba(10, 10, 12, 0.75);
-    border: 1.5px solid rgba(245,197,24,0.5);
-    box-shadow: 0 0 8px rgba(245,197,24,0.4), 0 0 16px rgba(245,197,24,0.15);
+    background: rgba(8, 8, 10, 0.80);
+    border: 1.5px solid rgba(239, 68, 68, 0.55);
+    box-shadow:
+        0 0 8px  rgba(239, 68, 68, 0.45),
+        0 0 18px rgba(239, 68, 68, 0.15);
     cursor: grab;
     opacity: 0;
     pointer-events: none;
@@ -171,262 +172,38 @@
     justify-content: center;
 }
 
-.overlay-pip:active  { cursor: grabbing; }
-.overlay-pip:hover   {
-    transform: scale(1.2) !important;
-    border-color: rgba(245,197,24,0.9);
-    box-shadow: 0 0 12px rgba(245,197,24,0.8), 0 0 24px rgba(245,197,24,0.35);
+.overlay-pip:active { cursor: grabbing; }
+
+.overlay-pip:hover {
+    transform: scale(1.20) !important;
+    border-color: rgba(239, 68, 68, 0.9);
+    box-shadow:
+        0 0 12px rgba(239, 68, 68, 0.80),
+        0 0 26px rgba(239, 68, 68, 0.35);
 }
 
 .overlay-pip svg {
     width: 16px;
     height: 16px;
-    color: #f5c518;
-    flex-shrink: 0;
-}
-
-@keyframes pipPulse {
-    0%, 100% { box-shadow: 0 0 6px rgba(245,197,24,0.5), 0 0 14px rgba(245,197,24,0.2); }
-    50%       { box-shadow: 0 0 12px rgba(245,197,24,0.9), 0 0 26px rgba(245,197,24,0.4); }
-}
-
-
-/* ── CONTEÚDO ── */
-.overlay-content {
-    transition:
-        opacity   220ms ease,
-        transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
-        filter    180ms ease;
-    transform-origin: center top;
-}
-
-
-/* ── BARRA DE CONTROLES ── */
-.overlay-bar {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 6px;
-    border-radius: 20px;
-
-    background: rgba(10, 10, 12, 0.82);
-    border: 1px solid rgba(255,255,255,0.10);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-
-    /* Flutua acima do conteúdo — posição absoluta evita zona morta */
-    position: absolute;
-    top: 4px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-4px) scale(0.94);
-    z-index: 10;
-
-    opacity: 0;
-    filter: blur(2px);
-
-    transition:
-        opacity   220ms cubic-bezier(0.34, 1.56, 0.64, 1),
-        transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
-        filter    180ms ease;
-
-    pointer-events: none;
-    user-select: none;
-    will-change: transform, opacity;
-
-    /* Área de hover estendida para não sumir ao mover entre wrap e barra */
-    padding-bottom: 10px;
-    margin-bottom: -10px;
-}
-
-.overlay-wrap:hover .overlay-bar,
-.overlay-bar.pinned {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
-    filter: blur(0px);
-    pointer-events: all;
-    transition-delay: 0ms;
-}
-
-/* Some imediatamente ao tirar o mouse — sem delay */
-.overlay-wrap:not(:hover) .overlay-bar:not(.pinned) {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-4px) scale(0.96);
-    filter: blur(1px);
-    pointer-events: none;
-    transition:
-        opacity   150ms ease 0ms,
-        transform 150ms ease 0ms,
-        filter    120ms ease 0ms;
-}
-
-
-/* ── BOTÕES ── */
-.obar-btn {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.40);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    transition:
-        background  140ms ease,
-        color       140ms ease,
-        transform   140ms cubic-bezier(0.34, 1.56, 0.64, 1),
-        box-shadow  140ms ease;
-
-    will-change: transform;
-}
-
-.obar-btn:hover {
-    background: rgba(255,255,255,0.13);
-    color: rgba(255,255,255,0.95);
-    transform: scale(1.18);
-}
-
-.obar-btn:active {
-    transform: scale(0.92);
-    transition-duration: 80ms;
-}
-
-/* Drag */
-.obar-btn--drag {
-    cursor: grab;
-    -webkit-app-region: drag;
-}
-.obar-btn--drag:active {
-    cursor: grabbing;
-}
-
-/* No-drag nos demais */
-.obar-btn--hide,
-.obar-btn--close,
-.obar-label {
-    -webkit-app-region: no-drag;
-}
-
-/* Hide — amarelo */
-.obar-btn--hide:hover {
-    background: rgba(245,197,24,0.20);
-    color: #f5c518;
-    box-shadow: 0 0 8px rgba(245,197,24,0.25);
-}
-
-/* Close — vermelho */
-.obar-btn--close:hover {
-    background: rgba(239,68,68,0.20);
     color: #ef4444;
-    box-shadow: 0 0 8px rgba(239,68,68,0.25);
-}
-
-
-/* ── LABEL DA BARRA ── */
-.obar-label {
-    font-family: "Segoe UI", system-ui, sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.22);
-    padding: 0 3px;
-    white-space: nowrap;
-}
-
-
-/* ── MODO HIDDEN ── */
-.overlay-wrap.is-hidden .overlay-content {
-    opacity: 0;
-    pointer-events: none;
-    transform: scale(0.5);
-    filter: blur(3px);
-    transition:
-        opacity   200ms ease,
-        transform 200ms ease,
-        filter    200ms ease;
-}
-
-.overlay-wrap.is-hidden .overlay-bar {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.overlay-wrap.is-hidden .overlay-pip {
-    opacity: 1;
-    pointer-events: all;
-    transform: scale(1);
-}
-
-
-/* ── PIP (ícone de mira PUBG — aparece quando hidden) ── */
-.overlay-pip {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(10, 10, 12, 0.75);
-    border: 1.5px solid rgba(245,197,24,0.5);
-    box-shadow:
-        0 0 8px  rgba(245,197,24,0.5),
-        0 0 18px rgba(245,197,24,0.2);
-    cursor: grab;
-    opacity: 0;
-    pointer-events: none;
-    transform: scale(0);
-    transition:
-        opacity   220ms cubic-bezier(0.34, 1.56, 0.64, 1),
-        transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    animation: pipPulse 2.4s ease-in-out infinite;
-    position: absolute;
-    top: 0;
-    left: 50%;
-    translate: -50% 0;
-    z-index: 100;
-
-    /* Centraliza o SVG interno */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.overlay-pip:active {
-    cursor: grabbing;
-}
-
-.overlay-pip:hover {
-    transform: scale(1.2) !important;
-    border-color: rgba(245,197,24,0.9);
-    box-shadow:
-        0 0 12px rgba(245,197,24,0.8),
-        0 0 26px rgba(245,197,24,0.4);
-}
-
-/* SVG da mira dentro do pip */
-.overlay-pip svg {
-    width: 18px;
-    height: 18px;
-    color: #f5c518;
     flex-shrink: 0;
 }
 
 @keyframes pipPulse {
     0%, 100% {
         box-shadow:
-            0 0 6px  rgba(245,197,24,0.5),
-            0 0 14px rgba(245,197,24,0.2);
+            0 0 6px  rgba(239, 68, 68, 0.45),
+            0 0 14px rgba(239, 68, 68, 0.15);
     }
     50% {
         box-shadow:
-            0 0 12px rgba(245,197,24,0.9),
-            0 0 26px rgba(245,197,24,0.4);
+            0 0 12px rgba(239, 68, 68, 0.85),
+            0 0 26px rgba(239, 68, 68, 0.35);
     }
 }
 
 
-/* ── CONTEÚDO — transição ao show ── */
+/* ── CONTEÚDO ── */
 .overlay-content {
     transition:
         opacity   220ms ease,
