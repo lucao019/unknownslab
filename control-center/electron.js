@@ -3,18 +3,36 @@
    Processo Main do Electron
 ========================================================= */
 
-const { app, BrowserWindow, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, shell, screen } = require("electron");
 const path = require("path");
 
 const isDev = process.argv.includes("--dev");
 
 let mainWindow   = null;
-let kbOverlay    = null;   // janela overlay do Keyboard Visualizer
-let mouseOverlay = null;   // janela overlay do Mouse Visualizer
+let kbOverlay    = null;
+let mouseOverlay = null;
 
 /* ── Serviços ───────────────────────────────────────────── */
 const kbService    = require("./src/services/keyboard-visualizer.js");
 const mouseService = require("./src/services/mouse-visualizer.js");
+
+
+/* ---------------------------------------------------------
+   HELPERS — posição segura para overlays
+   Usa workArea para descontar a taskbar.
+--------------------------------------------------------- */
+
+function safeOverlayPosition(winWidth, winHeight, offsetX = 20, offsetY = 20) {
+    const display = screen.getPrimaryDisplay();
+    const { x, y, width, height } = display.workArea;
+    return {
+        x: x + offsetX,
+        y: y + height - winHeight - offsetY
+    };
+}
+
+/* Nível de sobreposição — garante ficar sobre jogos em modo janela */
+const OVERLAY_LEVEL = "screen-saver";
 
 
 /* ---------------------------------------------------------
@@ -45,30 +63,28 @@ function createMainWindow() {
         }
     });
 
-    mainWindow.loadFile(
-        path.join(__dirname, "src", "index.html")
-    );
+    mainWindow.loadFile(path.join(__dirname, "src", "index.html"));
 
     if (isDev) {
         mainWindow.webContents.openDevTools({ mode: "detach" });
     }
 
-    mainWindow.on("closed", () => {
-        mainWindow = null;
-    });
+    mainWindow.on("closed", () => { mainWindow = null; });
 }
 
 
 /* ---------------------------------------------------------
    JANELA OVERLAY — KEYBOARD VISUALIZER
-   Transparente, sem borda, sempre no topo.
 --------------------------------------------------------- */
 
 function createKbOverlay() {
 
+    const KB_W = 400, KB_H = 260;
+    const pos  = safeOverlayPosition(KB_W, KB_H, 20, 20);
+
     kbOverlay = new BrowserWindow({
-        width: 400,
-        height: 230,
+        width:  KB_W,
+        height: KB_H,
 
         frame: false,
         transparent: true,
@@ -76,9 +92,8 @@ function createKbOverlay() {
         skipTaskbar: true,
         resizable: false,
 
-        /* Posição padrão: canto inferior esquerdo */
-        x: 20,
-        y: 820,
+        x: pos.x,
+        y: pos.y,
 
         title: "Unknowns Lab — Keyboard",
 
@@ -90,15 +105,13 @@ function createKbOverlay() {
         }
     });
 
-    kbOverlay.loadFile(
-        path.join(__dirname, "src", "overlay", "keyboard.html")
-    );
+    /* Nível alto de sobreposição — fica sobre o jogo em modo janela */
+    kbOverlay.setAlwaysOnTop(true, OVERLAY_LEVEL);
 
-    kbOverlay.on("closed", () => {
-        kbOverlay = null;
-    });
+    kbOverlay.loadFile(path.join(__dirname, "src", "overlay", "keyboard.html"));
 
-    /* Registra callback para enviar eventos de tecla para a overlay */
+    kbOverlay.on("closed", () => { kbOverlay = null; });
+
     kbService.setKeyEventCallback((event) => {
         if (kbOverlay && !kbOverlay.isDestroyed()) {
             kbOverlay.webContents.send("key-event", event);
@@ -113,9 +126,12 @@ function createKbOverlay() {
 
 function createMouseOverlay() {
 
+    const MS_W = 120, MS_H = 180;
+    const pos  = safeOverlayPosition(MS_W, MS_H, 440, 20);
+
     mouseOverlay = new BrowserWindow({
-        width: 120,
-        height: 160,
+        width:  MS_W,
+        height: MS_H,
 
         frame: false,
         transparent: true,
@@ -123,8 +139,8 @@ function createMouseOverlay() {
         skipTaskbar: true,
         resizable: false,
 
-        x: 20,
-        y: 580,
+        x: pos.x,
+        y: pos.y,
 
         title: "Unknowns Lab — Mouse",
 
@@ -136,9 +152,9 @@ function createMouseOverlay() {
         }
     });
 
-    mouseOverlay.loadFile(
-        path.join(__dirname, "src", "overlay", "mouse.html")
-    );
+    mouseOverlay.setAlwaysOnTop(true, OVERLAY_LEVEL);
+
+    mouseOverlay.loadFile(path.join(__dirname, "src", "overlay", "mouse.html"));
 
     mouseOverlay.on("closed", () => { mouseOverlay = null; });
 
@@ -161,14 +177,12 @@ ipcMain.on("window:maximize", () => {
     else mainWindow?.maximize();
 });
 
-ipcMain.on("window:close", () => mainWindow?.close());
-
+ipcMain.on("window:close",        () => mainWindow?.close());
 ipcMain.on("shell:open-external", (_e, url) => shell.openExternal(url));
+
 
 /* ---------------------------------------------------------
    IPC — OVERLAY CONTROLS (move / close)
-   Cada janela overlay envia esses eventos para si mesma.
-   BrowserWindow.fromWebContents identifica qual janela enviou.
 --------------------------------------------------------- */
 
 ipcMain.on("overlay:move", (e, dx, dy) => {
@@ -187,8 +201,6 @@ ipcMain.on("overlay:close", (e) => {
 
 /* ---------------------------------------------------------
    IPC — MÓDULOS
-   O renderer envia "module:start" / "module:stop"
-   e recebe "module:state" com o novo estado.
 --------------------------------------------------------- */
 
 ipcMain.handle("module:start", async (_e, id) => {
