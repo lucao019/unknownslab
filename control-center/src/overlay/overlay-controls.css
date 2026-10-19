@@ -87,7 +87,7 @@
 .obar-btn--drag {
     color: rgba(100, 180, 255, 0.55);
     cursor: grab;
-    -webkit-app-region: drag;
+    /* SEM -webkit-app-region: drag — feito via JS igual ao pip */
 }
 .obar-btn--drag:hover {
     color: #64b4ff;
@@ -97,9 +97,9 @@
 }
 .obar-btn--drag:active { cursor: grabbing; }
 
-/* Hide — amarelo */
-.obar-btn--hide {
-    color: rgba(245, 197, 24, 0.55);
+/* No-drag explícito nos demais */
+.obar-btn--hide,
+.obar-btn--close {
     -webkit-app-region: no-drag;
 }
 .obar-btn--hide:hover {

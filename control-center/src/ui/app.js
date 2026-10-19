@@ -144,23 +144,21 @@ function createCard(def) {
 
 function refreshCard(id) {
     const state = uiState[id];
-    const el = document.querySelector(`[data-id="${id}"]`);
-    if (!el) return;
+    /* Atualiza TODOS os cards com esse id (dashboard + página overlay) */
+    document.querySelectorAll(`[data-id="${id}"]`).forEach(el => {
+        const stateClasses = ["off","on","starting","stopping","error","unavailable"].map(s => `module-card--${s}`);
+        stateClasses.forEach(c => el.classList.remove(c));
+        el.classList.add(`module-card--${state.toLowerCase()}`);
 
-    const stateClasses = ["off","on","starting","stopping","error","unavailable"].map(s => `module-card--${s}`);
-    stateClasses.forEach(c => el.classList.remove(c));
-    el.classList.add(`module-card--${state.toLowerCase()}`);
+        const statusText = el.querySelector(".module-card__status-text");
+        if (statusText) statusText.textContent = STATE_LABELS[state] ?? state;
 
-    const statusText = el.querySelector(".module-card__status-text");
-    if (statusText) statusText.textContent = STATE_LABELS[state] ?? state;
-
-    const toggle = el.querySelector("[data-toggle]");
-    if (toggle) {
-        toggle.checked  = state === "ON";
-        toggle.disabled = state === "UNAVAILABLE" || state === "STARTING" || state === "STOPPING";
-    }
-
-    updateDashboard();
+        const toggle = el.querySelector("[data-toggle]");
+        if (toggle) {
+            toggle.checked  = state === "ON";
+            toggle.disabled = state === "UNAVAILABLE" || state === "STARTING" || state === "STOPPING";
+        }
+    });
 }
 
 

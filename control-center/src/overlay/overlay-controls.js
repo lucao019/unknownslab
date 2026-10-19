@@ -73,8 +73,39 @@
         closeBtn.addEventListener("mousedown", (e) => e.stopPropagation());
     }
 
-    /* ── DRAG da barra ── */
+    /* ── DRAG do botão de mover — via mousemove igual ao pip ── */
     if (dragBtn) {
+        let dragging  = false;
+        let dragMoved = false;
+        let startX    = 0;
+        let startY    = 0;
+
+        dragBtn.addEventListener("mousedown", (e) => {
+            dragging  = true;
+            dragMoved = false;
+            startX    = e.screenX;
+            startY    = e.screenY;
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        document.addEventListener("mousemove", (e) => {
+            if (!dragging) return;
+            const dx = e.screenX - startX;
+            const dy = e.screenY - startY;
+            if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragMoved = true;
+            if (dragMoved) {
+                startX = e.screenX;
+                startY = e.screenY;
+                window.overlayAPI?.moveWindow?.(dx, dy);
+            }
+        });
+
+        document.addEventListener("mouseup", () => {
+            dragging  = false;
+            dragMoved = false;
+        });
+
         dragBtn.addEventListener("click", (e) => e.stopPropagation());
     }
 
