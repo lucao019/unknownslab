@@ -1,5 +1,5 @@
 /* =========================================================
-   OVERLAY CONTROLS — script compartilhado
+   OVERLAY CONTROLS
 ========================================================= */
 
 (function () {
@@ -10,14 +10,34 @@
     const hideBtn  = document.querySelector("[data-action='hide']");
     const closeBtn = document.querySelector("[data-action='close']");
 
-    /* ── GUARD: ignora cliques logo após o mouse entrar ── */
+    /* ── setIgnoreMouseEvents
+       Nas áreas transparentes o Electron pode perder o hover.
+       Ao entrar no wrapper: para de ignorar o mouse.
+       Ao sair: volta a ignorar (passa eventos pro fundo/jogo).
+       { forward: true } garante que o mousemove ainda chega
+       pra detectar quando voltar. ── */
+
+    function enableMouse()  { window.overlayAPI?.setIgnoreMouse?.(false); }
+    function disableMouse() { window.overlayAPI?.setIgnoreMouse?.(true);  }
+
+    document.addEventListener("mousemove", () => enableMouse());
+    document.addEventListener("mouseleave", () => disableMouse());
+
+    /* Inicia ignorando — a janela não bloqueia o jogo por padrão */
+    disableMouse();
+
+
+    /* ── GUARD ── */
     let windowFocusedAt = Date.now();
-    window.addEventListener("focus",      () => { windowFocusedAt = Date.now(); });
-    window.addEventListener("mouseenter", () => { windowFocusedAt = Date.now(); });
+    window.addEventListener("mouseenter", () => {
+        windowFocusedAt = Date.now();
+        enableMouse();
+    });
 
     function isSafeClick() {
-        return (Date.now() - windowFocusedAt) > 300;
+        return (Date.now() - windowFocusedAt) > 200;
     }
+
 
     /* ── HIDE / SHOW ── */
     function hide() { wrap.classList.add("is-hidden"); }
@@ -31,51 +51,43 @@
         });
     }
 
-    /* ── PIP — drag move a janela, clique SEM movimento restaura ── */
-    if (pip) {
 
-        let pipDragging  = false;
-        let pipDragMoved = false;
-        let pipStartX    = 0;
-        let pipStartY    = 0;
+    /* ── PIP — drag move, clique parado restaura ── */
+    if (pip) {
+        let dragging  = false;
+        let dragMoved = false;
+        let startX    = 0;
+        let startY    = 0;
 
         pip.addEventListener("mousedown", (e) => {
-            pipDragging  = true;
-            pipDragMoved = false;
-            pipStartX    = e.screenX;
-            pipStartY    = e.screenY;
+            dragging  = true;
+            dragMoved = false;
+            startX    = e.screenX;
+            startY    = e.screenY;
             e.preventDefault();
             e.stopPropagation();
         });
 
         document.addEventListener("mousemove", (e) => {
-            if (!pipDragging) return;
-            const dx = e.screenX - pipStartX;
-            const dy = e.screenY - pipStartY;
-
-            /* Só conta como drag se moveu mais de 4px */
-            if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
-                pipDragMoved = true;
-            }
-
-            if (pipDragMoved) {
-                pipStartX = e.screenX;
-                pipStartY = e.screenY;
+            if (!dragging) return;
+            const dx = e.screenX - startX;
+            const dy = e.screenY - startY;
+            if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragMoved = true;
+            if (dragMoved) {
+                startX = e.screenX;
+                startY = e.screenY;
                 window.overlayAPI?.moveWindow?.(dx, dy);
             }
         });
 
         document.addEventListener("mouseup", () => {
-            const wasDrag = pipDragMoved;
-            pipDragging  = false;
-            pipDragMoved = false;
-
-            /* Só restaura se NÃO foi drag */
-            if (!wasDrag) {
-                show();
-            }
+            const wasDrag = dragMoved;
+            dragging  = false;
+            dragMoved = false;
+            if (!wasDrag) show();
         });
     }
+
 
     /* ── FECHAR ── */
     if (closeBtn) {
@@ -87,15 +99,10 @@
         closeBtn.addEventListener("mousedown", (e) => e.stopPropagation());
     }
 
-    /* ── DRAG da barra — usa -webkit-app-region no CSS ── */
+
+    /* ── DRAG da barra ── */
     if (dragBtn) {
         dragBtn.addEventListener("click", (e) => e.stopPropagation());
     }
-
-    /* ── Bloqueia cliques fantasmas fora de elementos interativos ── */
-    document.body.addEventListener("mousedown", (e) => {
-        const isInteractive = e.target.closest(".obar-btn, .overlay-pip, .overlay-bar");
-        if (!isInteractive) e.stopPropagation();
-    }, true);
 
 })();

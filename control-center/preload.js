@@ -25,7 +25,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
     /* Notificação quando overlay fecha pelo X */
     onModuleClosed: (cb) => {
-        ipcRenderer.removeAllListeners("module:closed");
         ipcRenderer.on("module:closed", (_e, id) => cb(id));
     },
 
