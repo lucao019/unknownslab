@@ -10,34 +10,10 @@
     const hideBtn  = document.querySelector("[data-action='hide']");
     const closeBtn = document.querySelector("[data-action='close']");
 
-    /* ── setIgnoreMouseEvents
-       Nas áreas transparentes o Electron pode perder o hover.
-       Ao entrar no wrapper: para de ignorar o mouse.
-       Ao sair: volta a ignorar (passa eventos pro fundo/jogo).
-       { forward: true } garante que o mousemove ainda chega
-       pra detectar quando voltar. ── */
-
-    function enableMouse()  { window.overlayAPI?.setIgnoreMouse?.(false); }
-    function disableMouse() { window.overlayAPI?.setIgnoreMouse?.(true);  }
-
-    document.addEventListener("mousemove", () => enableMouse());
-    document.addEventListener("mouseleave", () => disableMouse());
-
-    /* Inicia ignorando — a janela não bloqueia o jogo por padrão */
-    disableMouse();
-
-
     /* ── GUARD ── */
-    let windowFocusedAt = Date.now();
-    window.addEventListener("mouseenter", () => {
-        windowFocusedAt = Date.now();
-        enableMouse();
-    });
-
-    function isSafeClick() {
-        return (Date.now() - windowFocusedAt) > 200;
-    }
-
+    let enteredAt = Date.now();
+    window.addEventListener("mouseenter", () => { enteredAt = Date.now(); });
+    function isSafeClick() { return (Date.now() - enteredAt) > 200; }
 
     /* ── HIDE / SHOW ── */
     function hide() { wrap.classList.add("is-hidden"); }
@@ -50,7 +26,6 @@
             hide();
         });
     }
-
 
     /* ── PIP — drag move, clique parado restaura ── */
     if (pip) {
@@ -88,7 +63,6 @@
         });
     }
 
-
     /* ── FECHAR ── */
     if (closeBtn) {
         closeBtn.addEventListener("click", (e) => {
@@ -98,7 +72,6 @@
         });
         closeBtn.addEventListener("mousedown", (e) => e.stopPropagation());
     }
-
 
     /* ── DRAG da barra ── */
     if (dragBtn) {

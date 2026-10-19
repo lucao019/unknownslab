@@ -213,14 +213,6 @@ ipcMain.on("overlay:close", (e) => {
     win.close();
 });
 
-/* Permite que áreas transparentes passem eventos de mouse pro fundo
-   mas ainda receba eventos nas áreas com conteúdo */
-ipcMain.on("overlay:ignore-mouse", (e, ignore) => {
-    const win = BrowserWindow.fromWebContents(e.sender);
-    if (!win || win.isDestroyed()) return;
-    win.setIgnoreMouseEvents(ignore, { forward: true });
-});
-
 
 /* ---------------------------------------------------------
    IPC — MÓDULOS
