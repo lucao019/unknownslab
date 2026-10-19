@@ -147,12 +147,14 @@
 
 /* ── PIP — ícone flutuante quando hidden ── */
 .overlay-pip {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background: rgba(8, 8, 10, 0.80);
-    border: 1.5px solid rgba(239, 68, 68, 0.55);
-    box-shadow: 0 0 8px rgba(239, 68, 68, 0.40), 0 0 16px rgba(239, 68, 68, 0.15);
+    background: rgba(8, 8, 10, 0.85);
+    border: 1.5px solid rgba(239, 68, 68, 0.6);
+    box-shadow:
+        0 0 10px rgba(239, 68, 68, 0.50),
+        0 0 22px rgba(239, 68, 68, 0.20);
     cursor: grab;
     opacity: 0;
     pointer-events: none;
@@ -169,6 +171,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* overflow visible pra glow não cortar */
+    overflow: visible;
 }
 
 .overlay-pip:active { cursor: grabbing; }
