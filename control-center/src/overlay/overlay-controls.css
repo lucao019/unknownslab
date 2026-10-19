@@ -1,7 +1,5 @@
 /* =========================================================
    OVERLAY CONTROLS — barra compartilhada entre todas as overlays
-   Aparece ao hover, some quando idle.
-   Inclua este CSS em todas as overlays.
 ========================================================= */
 
 /* ── WRAPPER GERAL ── */
@@ -20,25 +18,50 @@
     gap: 4px;
     padding: 3px 6px;
     border-radius: 20px;
-    background: rgba(10, 10, 12, 0.80);
+
+    background: rgba(10, 10, 12, 0.82);
     border: 1px solid rgba(255,255,255,0.10);
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 
+    /* Estado inicial — invisível e levemente acima */
     opacity: 0;
-    transform: translateY(4px);
-    transition: opacity 180ms ease, transform 180ms ease;
-    pointer-events: none;
+    transform: translateY(-6px) scale(0.94);
+    filter: blur(2px);
 
+    /* Curva suave com pequeno overshoot no final */
+    transition:
+        opacity       220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        transform     220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        filter        180ms ease;
+
+    pointer-events: none;
     user-select: none;
+    will-change: transform, opacity;
 }
 
+/* Aparece ao hover no wrapper ou na própria barra */
 .overlay-wrap:hover .overlay-bar,
 .overlay-bar:hover,
 .overlay-bar.pinned {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
     pointer-events: all;
 }
+
+/* Some com transição mais rápida e sem bounce */
+.overlay-wrap:not(:hover) .overlay-bar:not(:hover):not(.pinned) {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+    filter: blur(1px);
+    transition:
+        opacity   160ms ease,
+        transform 160ms ease,
+        filter    120ms ease;
+    pointer-events: none;
+}
+
 
 /* ── BOTÕES ── */
 .obar-btn {
@@ -47,55 +70,87 @@
     border-radius: 50%;
     border: none;
     background: rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.45);
+    color: rgba(255,255,255,0.40);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 120ms ease, color 120ms ease;
     flex-shrink: 0;
+
+    transition:
+        background  140ms ease,
+        color       140ms ease,
+        transform   140ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow  140ms ease;
+
+    will-change: transform;
 }
 
 .obar-btn:hover {
-    background: rgba(255,255,255,0.14);
-    color: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.13);
+    color: rgba(255,255,255,0.95);
+    transform: scale(1.18);
 }
 
+.obar-btn:active {
+    transform: scale(0.92);
+    transition-duration: 80ms;
+}
+
+/* Drag */
 .obar-btn--drag {
     cursor: grab;
-    -webkit-app-region: drag;   /* Electron move a janela ao arrastar */
+    -webkit-app-region: drag;
 }
 .obar-btn--drag:active {
     cursor: grabbing;
 }
 
-/* Todos os outros botões da barra: explicitamente no-drag */
+/* No-drag nos demais */
 .obar-btn--hide,
 .obar-btn--close,
 .obar-label {
     -webkit-app-region: no-drag;
 }
 
-.obar-btn--hide:hover  { background: rgba(245,197,24,0.18); color: #f5c518; }
-.obar-btn--close:hover { background: rgba(239,68,68,0.18);  color: #ef4444; }
+/* Hide — amarelo */
+.obar-btn--hide:hover {
+    background: rgba(245,197,24,0.20);
+    color: #f5c518;
+    box-shadow: 0 0 8px rgba(245,197,24,0.25);
+}
+
+/* Close — vermelho */
+.obar-btn--close:hover {
+    background: rgba(239,68,68,0.20);
+    color: #ef4444;
+    box-shadow: 0 0 8px rgba(239,68,68,0.25);
+}
+
 
 /* ── LABEL DA BARRA ── */
 .obar-label {
     font-family: "Segoe UI", system-ui, sans-serif;
     font-size: 9px;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.25);
-    padding: 0 2px;
+    color: rgba(255,255,255,0.22);
+    padding: 0 3px;
     white-space: nowrap;
 }
 
-/* ── MODO HIDDEN — só um ponto amarelo ── */
+
+/* ── MODO HIDDEN ── */
 .overlay-wrap.is-hidden .overlay-content {
     opacity: 0;
     pointer-events: none;
-    transform: scale(0.4);
+    transform: scale(0.5);
+    filter: blur(3px);
+    transition:
+        opacity   200ms ease,
+        transform 200ms ease,
+        filter    200ms ease;
 }
 
 .overlay-wrap.is-hidden .overlay-bar {
@@ -109,19 +164,24 @@
     transform: scale(1);
 }
 
-/* ── PIP (picture-in-picture dot) ── */
+
+/* ── PIP (ponto de restore) ── */
 .overlay-pip {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: #f5c518;
-    box-shadow: 0 0 8px rgba(245,197,24,0.7), 0 0 16px rgba(245,197,24,0.3);
+    box-shadow:
+        0 0 6px  rgba(245,197,24,0.8),
+        0 0 14px rgba(245,197,24,0.35);
     cursor: pointer;
     opacity: 0;
     pointer-events: none;
     transform: scale(0);
-    transition: opacity 200ms ease, transform 200ms ease;
-    animation: pipPulse 2s ease-in-out infinite;
+    transition:
+        opacity   220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: pipPulse 2.4s ease-in-out infinite;
     position: absolute;
     top: 0;
     left: 50%;
@@ -129,13 +189,32 @@
     z-index: 100;
 }
 
-@keyframes pipPulse {
-    0%, 100% { box-shadow: 0 0 8px rgba(245,197,24,0.7), 0 0 16px rgba(245,197,24,0.3); }
-    50%       { box-shadow: 0 0 14px rgba(245,197,24,1.0), 0 0 28px rgba(245,197,24,0.5); }
+.overlay-pip:hover {
+    transform: scale(1.25) !important;
+    box-shadow:
+        0 0 10px rgba(245,197,24,1.0),
+        0 0 22px rgba(245,197,24,0.5);
 }
 
-/* ── CONTEÚDO — transição ao hide/show ── */
+@keyframes pipPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 6px  rgba(245,197,24,0.8),
+            0 0 14px rgba(245,197,24,0.35);
+    }
+    50% {
+        box-shadow:
+            0 0 12px rgba(245,197,24,1.0),
+            0 0 26px rgba(245,197,24,0.55);
+    }
+}
+
+
+/* ── CONTEÚDO — transição ao show ── */
 .overlay-content {
-    transition: opacity 200ms ease, transform 200ms ease;
+    transition:
+        opacity   220ms ease,
+        transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        filter    180ms ease;
     transform-origin: center top;
 }
