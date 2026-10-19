@@ -44,30 +44,15 @@
     }
 
 
-    /* ── DRAG — mover a janela pelo botão de drag ── */
+    /* ── DRAG — usa startDragging nativo do Electron ──
+       O botão tem -webkit-app-region: drag no CSS.
+       O JS só precisa garantir que hide/close não ativem
+       junto com o drag. O Electron cuida do resto. ── */
 
+    /* Impede que o drag dispare o hide acidentalmente */
     if (dragBtn) {
-        let dragging = false;
-        let startX = 0, startY = 0;
-
-        dragBtn.addEventListener("mousedown", (e) => {
-            dragging = true;
-            startX = e.screenX;
-            startY = e.screenY;
-            e.preventDefault();
-        });
-
-        document.addEventListener("mousemove", (e) => {
-            if (!dragging) return;
-            const dx = e.screenX - startX;
-            const dy = e.screenY - startY;
-            startX = e.screenX;
-            startY = e.screenY;
-            window.overlayAPI?.moveWindow?.(dx, dy);
-        });
-
-        document.addEventListener("mouseup", () => {
-            dragging = false;
+        dragBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
         });
     }
 

@@ -63,9 +63,17 @@
 
 .obar-btn--drag {
     cursor: grab;
+    -webkit-app-region: drag;   /* Electron move a janela ao arrastar */
 }
 .obar-btn--drag:active {
     cursor: grabbing;
+}
+
+/* Todos os outros botões da barra: explicitamente no-drag */
+.obar-btn--hide,
+.obar-btn--close,
+.obar-label {
+    -webkit-app-region: no-drag;
 }
 
 .obar-btn--hide:hover  { background: rgba(245,197,24,0.18); color: #f5c518; }
