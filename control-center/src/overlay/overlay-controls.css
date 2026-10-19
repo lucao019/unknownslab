@@ -1,0 +1,133 @@
+/* =========================================================
+   OVERLAY CONTROLS — barra compartilhada entre todas as overlays
+   Aparece ao hover, some quando idle.
+   Inclua este CSS em todas as overlays.
+========================================================= */
+
+/* ── WRAPPER GERAL ── */
+.overlay-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ── BARRA DE CONTROLES ── */
+.overlay-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    border-radius: 20px;
+    background: rgba(10, 10, 12, 0.80);
+    border: 1px solid rgba(255,255,255,0.10);
+    backdrop-filter: blur(6px);
+
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 180ms ease, transform 180ms ease;
+    pointer-events: none;
+
+    user-select: none;
+}
+
+.overlay-wrap:hover .overlay-bar,
+.overlay-bar:hover,
+.overlay-bar.pinned {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+/* ── BOTÕES ── */
+.obar-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease;
+    flex-shrink: 0;
+}
+
+.obar-btn:hover {
+    background: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.9);
+}
+
+.obar-btn--drag {
+    cursor: grab;
+}
+.obar-btn--drag:active {
+    cursor: grabbing;
+}
+
+.obar-btn--hide:hover  { background: rgba(245,197,24,0.18); color: #f5c518; }
+.obar-btn--close:hover { background: rgba(239,68,68,0.18);  color: #ef4444; }
+
+/* ── LABEL DA BARRA ── */
+.obar-label {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    padding: 0 2px;
+    white-space: nowrap;
+}
+
+/* ── MODO HIDDEN — só um ponto amarelo ── */
+.overlay-wrap.is-hidden .overlay-content {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.4);
+}
+
+.overlay-wrap.is-hidden .overlay-bar {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.overlay-wrap.is-hidden .overlay-pip {
+    opacity: 1;
+    pointer-events: all;
+    transform: scale(1);
+}
+
+/* ── PIP (picture-in-picture dot) ── */
+.overlay-pip {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #f5c518;
+    box-shadow: 0 0 8px rgba(245,197,24,0.7), 0 0 16px rgba(245,197,24,0.3);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0);
+    transition: opacity 200ms ease, transform 200ms ease;
+    animation: pipPulse 2s ease-in-out infinite;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    translate: -50% 0;
+    z-index: 100;
+}
+
+@keyframes pipPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(245,197,24,0.7), 0 0 16px rgba(245,197,24,0.3); }
+    50%       { box-shadow: 0 0 14px rgba(245,197,24,1.0), 0 0 28px rgba(245,197,24,0.5); }
+}
+
+/* ── CONTEÚDO — transição ao hide/show ── */
+.overlay-content {
+    transition: opacity 200ms ease, transform 200ms ease;
+    transform-origin: center top;
+}

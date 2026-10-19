@@ -1,11 +1,7 @@
-/* =========================================================
-   PRELOAD — Janela overlay do Mouse Visualizer
-========================================================= */
-
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("overlayAPI", {
-    onMouseEvent: (callback) => {
-        ipcRenderer.on("mouse-event", (_e, data) => callback(data));
-    }
+    onMouseEvent:  (cb) => ipcRenderer.on("mouse-event", (_e, d) => cb(d)),
+    moveWindow:    (dx, dy) => ipcRenderer.send("overlay:move", dx, dy),
+    closeOverlay:  () => ipcRenderer.send("overlay:close")
 });

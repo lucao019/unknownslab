@@ -150,6 +150,8 @@ function createMouseOverlay() {
 }
 
 
+/* ---------------------------------------------------------
+   IPC — CONTROLES DA JANELA PRINCIPAL
 --------------------------------------------------------- */
 
 ipcMain.on("window:minimize", () => mainWindow?.minimize());
@@ -162,6 +164,25 @@ ipcMain.on("window:maximize", () => {
 ipcMain.on("window:close", () => mainWindow?.close());
 
 ipcMain.on("shell:open-external", (_e, url) => shell.openExternal(url));
+
+/* ---------------------------------------------------------
+   IPC — OVERLAY CONTROLS (move / close)
+   Cada janela overlay envia esses eventos para si mesma.
+   BrowserWindow.fromWebContents identifica qual janela enviou.
+--------------------------------------------------------- */
+
+ipcMain.on("overlay:move", (e, dx, dy) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    if (!win || win.isDestroyed()) return;
+    const [x, y] = win.getPosition();
+    win.setPosition(x + Math.round(dx), y + Math.round(dy));
+});
+
+ipcMain.on("overlay:close", (e) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    if (!win || win.isDestroyed()) return;
+    win.close();
+});
 
 
 /* ---------------------------------------------------------

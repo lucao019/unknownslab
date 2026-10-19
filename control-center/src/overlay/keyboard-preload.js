@@ -1,16 +1,7 @@
-/* =========================================================
-   PRELOAD — Janela overlay do Keyboard Visualizer
-   Bridge entre o processo main e o renderer da overlay.
-========================================================= */
-
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("overlayAPI", {
-
-    onKeyEvent: (callback) => {
-        ipcRenderer.on("key-event", (_event, data) => {
-            callback(data);
-        });
-    }
-
+    onKeyEvent:    (cb) => ipcRenderer.on("key-event", (_e, d) => cb(d)),
+    moveWindow:    (dx, dy) => ipcRenderer.send("overlay:move", dx, dy),
+    closeOverlay:  () => ipcRenderer.send("overlay:close")
 });
