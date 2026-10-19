@@ -58,16 +58,16 @@
     transition-delay: 0ms;
 }
 
-/* Some com delay de 700ms — tempo suficiente pra chegar na barra */
+/* Some imediatamente ao tirar o mouse — sem delay */
 .overlay-wrap:not(:hover) .overlay-bar:not(.pinned) {
     opacity: 0;
     transform: translateX(-50%) translateY(-4px) scale(0.96);
     filter: blur(1px);
     pointer-events: none;
     transition:
-        opacity   200ms ease 700ms,
-        transform 200ms ease 700ms,
-        filter    150ms ease 700ms;
+        opacity   150ms ease 0ms,
+        transform 150ms ease 0ms,
+        filter    120ms ease 0ms;
 }
 
 

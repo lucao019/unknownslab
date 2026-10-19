@@ -390,7 +390,18 @@ document.getElementById("btn-close")?.addEventListener("click", () => {
 
 
 /* ──────────────────────────────────────────────────────────
-   INIT
+   LISTENER — overlay fechada pelo botão X
+   Atualiza o toggle para OFF sem precisar clicar no Control Center
 ────────────────────────────────────────────────────────── */
+window.electronAPI?.onModuleClosed?.((id) => {
+    if (uiState[id] === undefined) return;
+    uiState[id] = "OFF";
+    delete uiState[`${id}__error`];
+    refreshCard(id);
+    updateDashboard();
+});
+
+
+
 
 renderAll();

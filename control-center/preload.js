@@ -23,4 +23,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     /* Dados do PUBG Stats (jogadores online, kills, etc.) */
     pubgStatsData: () => ipcRenderer.invoke("pubg-stats:data"),
 
+    /* Notificação quando overlay fecha pelo X */
+    onModuleClosed: (cb) => ipcRenderer.on("module:closed", (_e, id) => cb(id)),
+
 });

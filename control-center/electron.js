@@ -80,7 +80,7 @@ function createMainWindow() {
 
 function createKbOverlay() {
 
-    const KB_W = 400, KB_H = 260;
+    const KB_W = 420, KB_H = 300;
     const pos  = safeOverlayPosition(KB_W, KB_H, 20, 20);
 
     kbOverlay = new BrowserWindow({
@@ -111,7 +111,14 @@ function createKbOverlay() {
 
     kbOverlay.loadFile(path.join(__dirname, "src", "overlay", "keyboard.html"));
 
-    kbOverlay.on("closed", () => { kbOverlay = null; });
+    kbOverlay.on("closed", () => {
+        kbOverlay = null;
+        kbService.stop().catch(() => {});
+        /* Avisa o renderer para atualizar o toggle para OFF */
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send("module:closed", "keyboard-visualizer");
+        }
+    });
 
     kbService.setKeyEventCallback((event) => {
         if (kbOverlay && !kbOverlay.isDestroyed()) {
@@ -127,7 +134,7 @@ function createKbOverlay() {
 
 function createMouseOverlay() {
 
-    const MS_W = 120, MS_H = 180;
+    const MS_W = 140, MS_H = 220;
     const pos  = safeOverlayPosition(MS_W, MS_H, 440, 20);
 
     mouseOverlay = new BrowserWindow({
@@ -157,7 +164,14 @@ function createMouseOverlay() {
 
     mouseOverlay.loadFile(path.join(__dirname, "src", "overlay", "mouse.html"));
 
-    mouseOverlay.on("closed", () => { mouseOverlay = null; });
+    mouseOverlay.on("closed", () => {
+        mouseOverlay = null;
+        mouseService.stop().catch(() => {});
+        /* Avisa o renderer para atualizar o toggle para OFF */
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send("module:closed", "mouse-visualizer");
+        }
+    });
 
     mouseService.setMouseEventCallback((event) => {
         if (mouseOverlay && !mouseOverlay.isDestroyed()) {
