@@ -165,16 +165,17 @@
 }
 
 
-/* ── PIP (ponto de restore) ── */
+/* ── PIP (ícone de mira PUBG — aparece quando hidden) ── */
 .overlay-pip {
-    width: 14px;
-    height: 14px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: #f5c518;
+    background: rgba(10, 10, 12, 0.75);
+    border: 1.5px solid rgba(245,197,24,0.5);
     box-shadow:
-        0 0 6px  rgba(245,197,24,0.8),
-        0 0 14px rgba(245,197,24,0.35);
-    cursor: pointer;
+        0 0 8px  rgba(245,197,24,0.5),
+        0 0 18px rgba(245,197,24,0.2);
+    cursor: grab;
     opacity: 0;
     pointer-events: none;
     transform: scale(0);
@@ -187,25 +188,43 @@
     left: 50%;
     translate: -50% 0;
     z-index: 100;
+
+    /* Centraliza o SVG interno */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay-pip:active {
+    cursor: grabbing;
 }
 
 .overlay-pip:hover {
-    transform: scale(1.25) !important;
+    transform: scale(1.2) !important;
+    border-color: rgba(245,197,24,0.9);
     box-shadow:
-        0 0 10px rgba(245,197,24,1.0),
-        0 0 22px rgba(245,197,24,0.5);
+        0 0 12px rgba(245,197,24,0.8),
+        0 0 26px rgba(245,197,24,0.4);
+}
+
+/* SVG da mira dentro do pip */
+.overlay-pip svg {
+    width: 18px;
+    height: 18px;
+    color: #f5c518;
+    flex-shrink: 0;
 }
 
 @keyframes pipPulse {
     0%, 100% {
         box-shadow:
-            0 0 6px  rgba(245,197,24,0.8),
-            0 0 14px rgba(245,197,24,0.35);
+            0 0 6px  rgba(245,197,24,0.5),
+            0 0 14px rgba(245,197,24,0.2);
     }
     50% {
         box-shadow:
-            0 0 12px rgba(245,197,24,1.0),
-            0 0 26px rgba(245,197,24,0.55);
+            0 0 12px rgba(245,197,24,0.9),
+            0 0 26px rgba(245,197,24,0.4);
     }
 }
 
