@@ -13,8 +13,9 @@ let kbOverlay    = null;
 let mouseOverlay = null;
 
 /* ── Serviços ───────────────────────────────────────────── */
-const kbService    = require("./src/services/keyboard-visualizer.js");
-const mouseService = require("./src/services/mouse-visualizer.js");
+const kbService         = require("./src/services/keyboard-visualizer.js");
+const mouseService      = require("./src/services/mouse-visualizer.js");
+const pubgStatsService  = require("./src/services/pubg-stats.js");
 
 
 /* ---------------------------------------------------------
@@ -237,6 +238,11 @@ ipcMain.handle("module:status", (_e, id) => {
     if (id === "keyboard-visualizer") return kbService.getStatus();
     if (id === "mouse-visualizer")    return mouseService.getStatus();
     return null;
+});
+
+/* Retorna os últimos dados do PUBG Stats (kills, online, etc.) */
+ipcMain.handle("pubg-stats:data", () => {
+    return pubgStatsService.getStatus();
 });
 
 

@@ -20,4 +20,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     moduleStop:   (id) => ipcRenderer.invoke("module:stop", id),
     moduleStatus: (id) => ipcRenderer.invoke("module:status", id),
 
+    /* Dados do PUBG Stats (jogadores online, kills, etc.) */
+    pubgStatsData: () => ipcRenderer.invoke("pubg-stats:data"),
+
 });

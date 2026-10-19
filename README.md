@@ -60,14 +60,14 @@ OBS Browser Source          Electron Control Center
 | Módulo | Estado | Descrição |
 |---|---|---|
 | PUBG Stats Overlay | ✅ Implementado | Exibe stats do dia via servidor local |
-| Keyboard Visualizer | 🔜 Fase 2 | Teclas pressionadas em tempo real |
-| Mouse Visualizer | 🔜 Fase 2 | Cliques e scroll do mouse |
-| Keystroke History | 🔜 Fase 3 | Histórico de inputs em faixa |
-| WASD / Strafe Trainer | 🔜 Fase 4 | Exercícios de movimentação |
-| Session Recorder | 🔜 Fase 5 | Gravação de sessões de input |
-| Event Timeline | 🔜 Fase 5 | Linha do tempo de inputs |
-| OBS Integration | 🔜 Fase 6 | Controle de Browser Sources no OBS |
-| Tutorial Mode | 🔜 Fase 6 | Layout para gravação de tutoriais |
+| Keyboard Visualizer | ✅ Implementado | Teclas pressionadas em tempo real |
+| Mouse Visualizer | ✅ Implementado | Cliques, scroll e botões laterais do mouse |
+| Keystroke History | 🔜 Fase 4 | Histórico de inputs em faixa |
+| WASD / Strafe Trainer | 🔜 Fase 5 | Exercícios de movimentação |
+| Session Recorder | 🔜 Fase 6 | Gravação de sessões de input |
+| Event Timeline | 🔜 Fase 6 | Linha do tempo de inputs |
+| OBS Integration | 🔜 Fase 7 | Controle de Browser Sources no OBS |
+| Tutorial Mode | 🔜 Fase 7 | Layout para gravação de tutoriais |
 
 Módulos marcados como 🔜 aparecem no Control Center como **INDISPONÍVEL** até sua implementação real e validação. Nenhum módulo é marcado como funcional sem estar testado.
 

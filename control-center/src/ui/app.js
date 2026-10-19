@@ -196,6 +196,9 @@ async function handleToggle(id) {
             uiState[id] = "ON";
             delete uiState[`${id}__error`];
 
+            /* Liga polling de online quando pubg-stats sobe */
+            if (id === "pubg-stats-overlay") startOnlinePoll();
+
         } catch (err) {
             uiState[id] = "ERROR";
             uiState[`${id}__error`] = err.message;
@@ -210,6 +213,8 @@ async function handleToggle(id) {
             if (IPC_MODULES.has(id)) {
                 await window.electronAPI?.moduleStop(id);
             }
+            /* Para polling de online quando pubg-stats desce */
+            if (id === "pubg-stats-overlay") stopOnlinePoll();
         } catch (_) { /* ignora falha no stop */ }
 
         uiState[id] = "OFF";
@@ -221,8 +226,50 @@ async function handleToggle(id) {
 
 
 /* ──────────────────────────────────────────────────────────
-   RENDERIZAÇÃO POR CATEGORIA
+   PUBG STATS — widget de jogadores online no dashboard
+   Polling a cada 60s quando o módulo pubg-stats-overlay
+   estiver ON. Para quando estiver OFF.
 ────────────────────────────────────────────────────────── */
+
+let onlinePollTimer = null;
+
+async function fetchOnlineCount() {
+    try {
+        const data = await window.electronAPI?.pubgStatsData();
+        if (!data) return;
+
+        const count = data.jogadoresOnline ?? data.lastStatus?.jogadoresOnline;
+        if (!count) return;
+
+        const card = document.getElementById("stat-card-online");
+        const el   = document.getElementById("stat-online-count");
+        const sub  = document.getElementById("stat-online-sub");
+
+        if (card) card.style.display = "";
+        if (el)  el.textContent  = Number(count).toLocaleString("pt-BR");
+        if (sub) sub.textContent = "Steam · " + new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+    } catch (_) { /* servidor offline — mantém último valor */ }
+}
+
+function startOnlinePoll() {
+    fetchOnlineCount();
+    if (!onlinePollTimer) {
+        onlinePollTimer = setInterval(fetchOnlineCount, 60_000);
+    }
+}
+
+function stopOnlinePoll() {
+    if (onlinePollTimer) {
+        clearInterval(onlinePollTimer);
+        onlinePollTimer = null;
+    }
+    const card = document.getElementById("stat-card-online");
+    if (card) card.style.display = "none";
+}
+
+
+
 
 function renderGrid(containerId, category) {
     const container = document.getElementById(containerId);
