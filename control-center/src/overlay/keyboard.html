@@ -62,11 +62,16 @@
         }
 
         .key.releasing {
-            background: rgba(245, 197, 24, 0.35);
-            border-color: rgba(245, 197, 24, 0.4);
-            color: rgba(245, 197, 24, 0.8);
+            background: rgba(245, 197, 24, 0.12);
+            border-color: rgba(245, 197, 24, 0.18);
+            color: rgba(255,255,255,0.35);
             transform: scale(1);
-            box-shadow: 0 0 8px rgba(245, 197, 24, 0.2);
+            box-shadow: none;
+            transition:
+                background   120ms ease,
+                border-color 120ms ease,
+                color        120ms ease,
+                box-shadow   120ms ease;
         }
 
         .kb {

@@ -5,7 +5,7 @@
 ========================================================= */
 
 /* Tempo em ms que a tecla fica em "releasing" após keyup */
-const RELEASE_FADE_MS = 600;
+const RELEASE_FADE_MS = 120;
 
 /* Map: label → elemento DOM */
 const keyEls = new Map();
