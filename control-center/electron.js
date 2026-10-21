@@ -4,6 +4,7 @@
 ========================================================= */
 
 const { app, BrowserWindow, ipcMain, shell, screen } = require("electron");
+const fs = require("fs");
 const path = require("path");
 
 const isDev = process.argv.includes("--dev");
@@ -16,15 +17,17 @@ let kbOverlay       = null;
 let mouseOverlay    = null;
 let crosshairWindow = null;
 let crosshairReady  = false;
-let currentCrosshairConfig = {
+const DEFAULT_CROSSHAIR_CONFIG = {
     style: "cross",
     color: "#00FF00",
     outlineColor: "#000000",
     size: 10,
     thickness: 2,
     gap: 4,
-    opacity: 0.9
+    opacity: 0.9,
+    fullscreen: false
 };
+let currentCrosshairConfig = { ...DEFAULT_CROSSHAIR_CONFIG };
 
 const VALID_MODULE_IDS = new Set(["keyboard-visualizer", "mouse-visualizer", "crosshair"]);
 
@@ -32,6 +35,8 @@ const VALID_MODULE_IDS = new Set(["keyboard-visualizer", "mouse-visualizer", "cr
 const kbService         = require("./src/services/keyboard-visualizer.js");
 const mouseService      = require("./src/services/mouse-visualizer.js");
 const pubgStatsService  = require("./src/services/pubg-stats.js");
+const monitorPubgForeground = require("./src/services/pubg-foreground-monitor.js");
+let stopPubgForegroundMonitor = null;
 
 
 /* ---------------------------------------------------------
@@ -272,6 +277,8 @@ function createCrosshairOverlay() {
         skipTaskbar: true,
         resizable: false,
         focusable: false,
+        show: false,
+        fullscreen: currentCrosshairConfig.fullscreen,
         title: "Unknowns Lab — Crosshair",
         webPreferences: {
             preload: path.join(__dirname, "src", "overlay", "crosshair-preload.js"),
@@ -286,6 +293,11 @@ function createCrosshairOverlay() {
         if (!crosshairWindow || crosshairWindow.isDestroyed()) return;
         crosshairReady = true;
         crosshairWindow.webContents.send("crosshair:update", currentCrosshairConfig);
+        stopPubgForegroundMonitor = monitorPubgForeground((isPubgActive) => {
+            if (!crosshairWindow || crosshairWindow.isDestroyed()) return;
+            if (isPubgActive) crosshairWindow.showInactive();
+            else crosshairWindow.hide();
+        });
     });
 
     crosshairWindow.setAlwaysOnTop(true, OVERLAY_LEVEL);
@@ -296,6 +308,8 @@ function createCrosshairOverlay() {
     startRmbHook();
 
     crosshairWindow.on("closed", () => {
+        stopPubgForegroundMonitor?.();
+        stopPubgForegroundMonitor = null;
         stopRmbHook();
         crosshairWindow = null;
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -396,6 +410,8 @@ ipcMain.handle("pubg-stats:data", () => {
     return pubgStatsService.getStatus();
 });
 
+ipcMain.handle("crosshair:get-config", () => currentCrosshairConfig);
+
 /* Sanitiza e encaminha configuração de crosshair para a janela overlay.
    Valida campos na fronteira de confiança antes de repassar ao renderer. */
 const VALID_CROSSHAIR_STYLES = new Set(["cross", "dot", "crossdot", "circle", "circledot", "cs", "pubg", "h1z1", "fortnite"]);
@@ -414,15 +430,40 @@ function sanitizeCrosshairConfig(raw) {
     const thickness = clamp(Number(raw.thickness) || 2,   0.5, 20);
     const gap       = clamp(Number(raw.gap)        || 4,  0, 50);
     const opacity   = clamp(Number(raw.opacity)    || 0.9, 0, 1);
+    const fullscreen = raw.fullscreen === true;
 
-    return { style, color, outlineColor, size, thickness, gap, opacity };
+    return { style, color, outlineColor, size, thickness, gap, opacity, fullscreen };
+}
+
+function loadCrosshairConfig() {
+    const configPath = path.join(app.getPath("userData"), "crosshair-config.json");
+    try {
+        const saved = JSON.parse(fs.readFileSync(configPath, "utf8"));
+        return sanitizeCrosshairConfig(saved) || { ...DEFAULT_CROSSHAIR_CONFIG };
+    } catch {
+        return { ...DEFAULT_CROSSHAIR_CONFIG };
+    }
+}
+
+function saveCrosshairConfig(config) {
+    const configPath = path.join(app.getPath("userData"), "crosshair-config.json");
+    try {
+        fs.mkdirSync(path.dirname(configPath), { recursive: true });
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf8");
+    } catch (error) {
+        console.error("Falha ao salvar configuração da crosshair:", error.message);
+    }
 }
 
 ipcMain.on("crosshair:config", (_e, rawConfig) => {
     const config = sanitizeCrosshairConfig(rawConfig);
     if (!config) return;
     currentCrosshairConfig = config;
+    saveCrosshairConfig(config);
     if (!crosshairReady || !crosshairWindow || crosshairWindow.isDestroyed()) return;
+    if (crosshairWindow.isFullScreen() !== config.fullscreen) {
+        crosshairWindow.setFullScreen(config.fullscreen);
+    }
     crosshairWindow.webContents.send("crosshair:update", config);
 });
 
@@ -432,7 +473,9 @@ ipcMain.on("crosshair:config", (_e, rawConfig) => {
 --------------------------------------------------------- */
 
 app.whenReady().then(() => {
-    if (hasSingleInstanceLock) createMainWindow();
+    if (!hasSingleInstanceLock) return;
+    currentCrosshairConfig = loadCrosshairConfig();
+    createMainWindow();
 });
 
 app.on("second-instance", () => {

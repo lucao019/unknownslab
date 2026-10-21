@@ -49,7 +49,8 @@ const crosshairConfig = {
     color: "#00FF00",
     outlineColor: "#000000",
     outlineEnabled: true,
-    opacity: 0.9
+    opacity: 0.9,
+    fullscreen: false
 };
 
 
@@ -310,13 +311,15 @@ function sendCrosshairConfig() {
     const outlineEnabled = document.getElementById('crosshair-outline-enabled')?.checked ?? crosshairConfig.outlineEnabled;
     const opacity       = parseFloat(document.getElementById('crosshair-opacity')?.value ?? crosshairConfig.opacity);
     const size          = parseFloat(document.getElementById('crosshair-size')?.value ?? 10);
+    const fullscreen    = document.getElementById('crosshair-fullscreen')?.checked ?? crosshairConfig.fullscreen;
     window.electronAPI.crosshairConfig({
         style: crosshairConfig.style,
         color,
         outlineColor,
         outlineEnabled,
         size,
-        opacity
+        opacity,
+        fullscreen
     });
 }
 
@@ -346,6 +349,24 @@ function initCrosshairPanel() {
 
     /* Botão Aplicar */
     document.getElementById('crosshair-apply-btn')?.addEventListener('click', sendCrosshairConfig);
+
+    document.getElementById('crosshair-fullscreen')?.addEventListener('change', sendCrosshairConfig);
+
+    window.electronAPI?.getCrosshairConfig?.().then(config => {
+        if (!config) return;
+        Object.assign(crosshairConfig, config);
+        document.getElementById('crosshair-color').value = config.color;
+        document.getElementById('crosshair-opacity').value = config.opacity;
+        document.getElementById('crosshair-opacity-value').textContent = Number(config.opacity).toFixed(2);
+        document.getElementById('crosshair-size').value = config.size;
+        document.getElementById('crosshair-size-value').textContent = config.size;
+        document.getElementById('crosshair-fullscreen').checked = config.fullscreen;
+        document.querySelectorAll('#crosshair-style-buttons .style-btn').forEach(btn => {
+            const selected = btn.dataset.style === config.style;
+            btn.classList.toggle('active', selected);
+            btn.setAttribute('aria-pressed', String(selected));
+        });
+    }).catch(() => {});
 }
 
 

@@ -56,7 +56,7 @@ OBS Browser Source          Electron Control Center
                                 └── Overlays independentes (teclado, mouse, crosshair)
 ```
 
-O overlay de crosshair é uma janela transparente do Electron com canvas 2D. A configuração é enviada pelo Control Center via IPC; o overlay não recebe acesso direto ao Node.js.
+O overlay de crosshair é uma janela transparente do Electron com canvas 2D. A configuração é enviada pelo Control Center via IPC e salva no perfil local do usuário. A mira só aparece enquanto a janela do PUBG (`TslGame.exe`) está ativa e se oculta ao alternar para qualquer outra janela. O modo de compatibilidade com tela cheia usa uma janela sem bordas; jogos em fullscreen exclusivo podem bloquear overlays externos.
 
 ---
 
@@ -67,7 +67,7 @@ O overlay de crosshair é uma janela transparente do Electron com canvas 2D. A c
 | PUBG Stats Overlay | ✅ Implementado | Exibe stats do dia via servidor local |
 | Keyboard Visualizer | ✅ Implementado | Teclas pressionadas em tempo real |
 | Mouse Visualizer | ✅ Implementado | Cliques, scroll e botões laterais do mouse |
-| Crosshair | ✅ Implementado | Mira estática com presets de ponto, cruz e círculo; cor, tamanho e opacidade configuráveis |
+| Crosshair | ✅ Implementado | Mira estática com presets de ponto, cruz e círculo; cor, tamanho, opacidade e modo sem bordas configuráveis e salvos |
 | Keystroke History | 🔜 Fase 4 | Histórico de inputs em faixa |
 | WASD / Strafe Trainer | 🔜 Fase 5 | Exercícios de movimentação |
 | Session Recorder | 🔜 Fase 6 | Gravação de sessões de input |

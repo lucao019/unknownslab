@@ -11,6 +11,9 @@ Formato: [versão] - data | o que mudou | o que foi testado.
 ### Adicionado
 - Crosshair em janela Electron transparente, centralizada, click-through e escondida enquanto o botão direito está pressionado.
 - Presets estáticos de ponto, cruz e círculo, com controles de cor, tamanho e opacidade.
+- Modo opcional de janela sem bordas para uso em jogos em tela cheia compatível.
+- Preservação local do preset, cor, tamanho, opacidade e modo de tela cheia entre execuções.
+- Mira exibida somente quando a janela do PUBG (`TslGame.exe`) está em primeiro plano.
 - Configuração da crosshair encaminhada por IPC seguro e reaplicada após o overlay terminar de carregar.
 - Crosshair adicionada ao catálogo de módulos do Control Center.
 
@@ -25,9 +28,12 @@ Formato: [versão] - data | o que mudou | o que foi testado.
 
 ### Ferramentas e validação
 - Electron 34, Canvas 2D, `contextBridge`/IPC, `uiohook-napi` e `electron-builder`.
-- `node --check` nos arquivos JavaScript alterados: aprovado.
+- `node --check` nos arquivos JavaScript alterados e teste do monitor de janela ativa: aprovados.
 - Build Windows x64 (NSIS e portátil): concluída com sucesso.
-- A validação visual em execução ainda não foi registrada.
+- Comportamento do overlay confirmado em execução pelo usuário.
+
+### Limitação
+- Jogos em fullscreen exclusivo podem impedir overlays externos; usar modo janela sem bordas quando necessário.
 
 ## [0.6.0] - 2026-10-18
 
