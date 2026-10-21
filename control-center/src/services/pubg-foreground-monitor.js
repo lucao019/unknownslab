@@ -71,7 +71,7 @@ while ($true) {
         [Console]::Out.Flush()
         $lastState = $state
     }
-    Start-Sleep -Milliseconds 150
+    Start-Sleep -Milliseconds 50
 }
 `;
 

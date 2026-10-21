@@ -9,6 +9,12 @@
     flex-direction: column;
     align-items: center;
     padding-top: 30px;
+    transform: scale(var(--overlay-scale, 1));
+    transform-origin: center top;
+}
+
+body[data-overlay-kind="keyboard"] .overlay-wrap {
+    transform-origin: left top;
 }
 
 /* ── GRUPO DE BOTÕES — flutua ACIMA do conteúdo ── */
@@ -203,3 +209,50 @@
         filter    180ms ease;
     transform-origin: center top;
 }
+
+.overlay-wrap.is-resizing,
+.overlay-wrap.is-resizing .overlay-content {
+    transition: none;
+}
+
+.overlay-resize-handle {
+    position: fixed;
+    z-index: 200;
+    pointer-events: auto;
+    touch-action: none;
+    -webkit-app-region: no-drag;
+    background: transparent;
+}
+
+.overlay-resize-handle--top,
+.overlay-resize-handle--bottom {
+    left: 28px;
+    right: 28px;
+    height: 16px;
+}
+
+.overlay-resize-handle--top { top: 0; }
+.overlay-resize-handle--bottom { bottom: 0; }
+
+.overlay-resize-handle--left,
+.overlay-resize-handle--right {
+    top: 28px;
+    bottom: 28px;
+    width: 16px;
+}
+
+.overlay-resize-handle--left { left: 0; }
+.overlay-resize-handle--right { right: 0; }
+
+.overlay-resize-handle--top-left,
+.overlay-resize-handle--top-right,
+.overlay-resize-handle--bottom-right,
+.overlay-resize-handle--bottom-left {
+    width: 30px;
+    height: 30px;
+}
+
+.overlay-resize-handle--top-left { top: 0; left: 0; }
+.overlay-resize-handle--top-right { top: 0; right: 0; }
+.overlay-resize-handle--bottom-right { bottom: 0; right: 0; }
+.overlay-resize-handle--bottom-left { bottom: 0; left: 0; }

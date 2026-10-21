@@ -17,6 +17,14 @@ let kbOverlay       = null;
 let mouseOverlay    = null;
 let crosshairWindow = null;
 let crosshairReady  = false;
+const overlayBaseSizes = {
+    "keyboard-visualizer": { width: 420, height: 300 },
+    "mouse-visualizer": { width: 140, height: 220 }
+};
+const overlayScales = {
+    "keyboard-visualizer": 1,
+    "mouse-visualizer": 1
+};
 const DEFAULT_CROSSHAIR_CONFIG = {
     style: "cross",
     color: "#00FF00",
@@ -84,6 +92,44 @@ const OVERLAY_LEVEL = "screen-saver";
 /* Clamp helper — limita valores a um intervalo */
 const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
 
+function getOverlaySize(id) {
+    const base = overlayBaseSizes[id];
+    const scale = overlayScales[id] ?? 1;
+    return {
+        width: Math.round(base.width * scale),
+        height: Math.round(base.height * scale)
+    };
+}
+
+function setOverlayScale(win, id, requestedScale, edge = "") {
+    const base = overlayBaseSizes[id];
+    if (!base || !win || win.isDestroyed() || !Number.isFinite(requestedScale)) return;
+
+    const display = screen.getDisplayMatching(win.getBounds());
+    const maxScale = Math.min(
+        2.5,
+        display.workArea.width / base.width,
+        display.workArea.height / base.height
+    );
+    const scale = clamp(requestedScale, 0.5, Math.max(0.5, maxScale));
+    overlayScales[id] = scale;
+    const bounds = win.getBounds();
+    const width = Math.round(base.width * scale);
+    const height = Math.round(base.height * scale);
+    const anchorX = edge.includes("left") ? bounds.x + bounds.width :
+        edge.includes("right") ? bounds.x : bounds.x + bounds.width / 2;
+    const anchorY = edge.includes("top") ? bounds.y + bounds.height :
+        edge.includes("bottom") ? bounds.y : bounds.y + bounds.height / 2;
+    win.setBounds({
+        x: Math.round(edge.includes("left") ? anchorX - width :
+            edge.includes("right") ? anchorX : anchorX - width / 2),
+        y: Math.round(edge.includes("top") ? anchorY - height :
+            edge.includes("bottom") ? anchorY : anchorY - height / 2),
+        width,
+        height
+    });
+}
+
 
 /* ---------------------------------------------------------
    JANELA PRINCIPAL
@@ -135,7 +181,7 @@ function createMainWindow() {
 
 function createKbOverlay() {
 
-    const KB_W = 420, KB_H = 300;
+    const { width: KB_W, height: KB_H } = getOverlaySize("keyboard-visualizer");
     const pos  = safeOverlayPosition(KB_W, KB_H, 20, 20);
 
     kbOverlay = new BrowserWindow({
@@ -189,7 +235,7 @@ function createKbOverlay() {
 
 function createMouseOverlay() {
 
-    const MS_W = 140, MS_H = 220;
+    const { width: MS_W, height: MS_H } = getOverlaySize("mouse-visualizer");
     const pos  = safeOverlayPosition(MS_W, MS_H, 440, 20);
 
     mouseOverlay = new BrowserWindow({
@@ -246,6 +292,9 @@ const inputHook = require("./src/services/global-input-hook.js");
 const { UiohookKey } = require("uiohook-napi");
 
 let rmbHookActive = false;
+let pubgForegroundActive = false;
+let pubgForegroundBounds = null;
+let crosshairSuppressedByOutsideClick = false;
 const pressedCrosshairKeys = new Set();
 const CROSSHAIR_STYLES = ["dot", "cross", "circle"];
 const CROSSHAIR_COLORS = ["#00FF00", "#FF0000", "#00A2FF", "#FFFF00", "#FFFFFF", "#FF00FF"];
@@ -308,7 +357,21 @@ function _onCrosshairWheel(e) {
 }
 
 function _onRmbDown(e) {
-    if (e.button !== 2) return; // só RMB
+    if (pubgForegroundActive && pubgForegroundBounds &&
+        (e.x < pubgForegroundBounds.x || e.y < pubgForegroundBounds.y ||
+         e.x >= pubgForegroundBounds.x + pubgForegroundBounds.width ||
+         e.y >= pubgForegroundBounds.y + pubgForegroundBounds.height)) {
+        crosshairSuppressedByOutsideClick = true;
+        if (crosshairWindow && !crosshairWindow.isDestroyed()) crosshairWindow.hide();
+        return;
+    }
+    if (pubgForegroundActive && crosshairSuppressedByOutsideClick) {
+        crosshairSuppressedByOutsideClick = false;
+        if (e.button !== 2 && crosshairWindow && !crosshairWindow.isDestroyed()) {
+            crosshairWindow.showInactive();
+        }
+    }
+    if (e.button !== 2) return;
     if (crosshairWindow && !crosshairWindow.isDestroyed()) {
         crosshairWindow.hide();
     }
@@ -316,8 +379,9 @@ function _onRmbDown(e) {
 
 function _onRmbUp(e) {
     if (e.button !== 2) return;
-    if (crosshairWindow && !crosshairWindow.isDestroyed()) {
-        crosshairWindow.show();
+    if (pubgForegroundActive && !crosshairSuppressedByOutsideClick &&
+        crosshairWindow && !crosshairWindow.isDestroyed()) {
+        crosshairWindow.showInactive();
     }
 }
 
@@ -361,11 +425,17 @@ function createCrosshairOverlay() {
         crosshairReady = true;
         crosshairWindow.webContents.send("crosshair:update", currentCrosshairConfig);
         stopPubgForegroundMonitor = monitorPubgForeground(({ active, bounds }) => {
+            const wasActive = pubgForegroundActive;
+            pubgForegroundActive = active;
+            pubgForegroundBounds = active ? bounds : null;
+            if (!active) crosshairSuppressedByOutsideClick = false;
+            else if (!wasActive) crosshairSuppressedByOutsideClick = false;
             if (!crosshairWindow || crosshairWindow.isDestroyed()) return;
             if (!active) {
                 crosshairWindow.hide();
                 return;
             }
+            if (crosshairSuppressedByOutsideClick) return;
 
             const gameCenter = screen.screenToDipPoint({
                 x: bounds.x + bounds.width / 2,
@@ -429,6 +499,23 @@ ipcMain.on("overlay:move", (e, dx, dy) => {
         x + Math.round(clamp(dx, -500, 500)),
         y + Math.round(clamp(dy, -500, 500))
     );
+});
+
+ipcMain.on("overlay:resize", (e, width, height, edge) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    if (!win || win.isDestroyed()) return;
+    if (!Number.isFinite(width) || !Number.isFinite(height)) return;
+
+    const id = win === kbOverlay ? "keyboard-visualizer" :
+        win === mouseOverlay ? "mouse-visualizer" : null;
+    if (!id) return;
+    const base = overlayBaseSizes[id];
+    const validEdges = new Set([
+        "top", "right", "bottom", "left",
+        "top-left", "top-right", "bottom-right", "bottom-left"
+    ]);
+    if (typeof edge !== "string" || !validEdges.has(edge)) return;
+    setOverlayScale(win, id, Math.min(width / base.width, height / base.height), edge);
 });
 
 ipcMain.on("overlay:close", (e) => {
