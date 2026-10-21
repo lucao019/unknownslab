@@ -28,4 +28,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.on("module:closed", (_e, id) => cb(id));
     },
 
+    /* Crosshair — envia config de estilo/cor ao overlay */
+    crosshairConfig: (config) => ipcRenderer.send("crosshair:config", config),
+
 });

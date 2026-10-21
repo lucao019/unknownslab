@@ -181,6 +181,44 @@
                     </div>
                 </div>
                 <div class="module-grid" id="grid-overlay"></div>
+
+                <div id="crosshair-panel" style="display:none" class="crosshair-config-panel">
+                  <h3 class="panel-title">Crosshair — Configuração</h3>
+
+                                    <div class="style-section">
+                                        <label class="config-label">Modelo</label>
+                                        <div class="style-buttons" id="crosshair-style-buttons" role="group" aria-label="Modelo da mira">
+                                            <button type="button" class="style-btn" data-style="dot" aria-pressed="false">Ponto</button>
+                                            <button type="button" class="style-btn active" data-style="cross" aria-pressed="true">Cruz</button>
+                                            <button type="button" class="style-btn" data-style="circle" aria-pressed="false">Círculo</button>
+                                        </div>
+                                    </div>
+
+                  <!-- Cor principal -->
+                  <div class="config-row">
+                    <label class="config-label">Cor</label>
+                    <input type="color" id="crosshair-color" value="#00FF00">
+                  </div>
+
+                  <!-- Opacidade -->
+                  <div class="config-row">
+                    <label class="config-label">Opacidade</label>
+                    <input type="range" id="crosshair-opacity" min="0" max="1" step="0.05" value="0.9">
+                    <span id="crosshair-opacity-value" class="range-value">0.9</span>
+                  </div>
+
+                  <!-- Tamanho -->
+                  <div class="config-row">
+                    <label class="config-label">Tamanho</label>
+                    <input type="range" id="crosshair-size" min="2" max="40" step="1" value="10">
+                    <span id="crosshair-size-value" class="range-value">10</span>
+                  </div>
+
+                  <!-- Botão aplicar -->
+                  <div class="config-row">
+                    <button id="crosshair-apply-btn" class="btn-apply">Aplicar</button>
+                  </div>
+                </div>
             </section>
 
             <!-- MOVEMENT -->

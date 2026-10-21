@@ -23,6 +23,7 @@
 const REGISTRY = [
     { id: "keyboard-visualizer",  name: "Keyboard Visualizer",  desc: "Exibe as teclas pressionadas em tempo real na overlay do OBS.", category: "overlay",   icon: "keyboard",        implemented: true  },
     { id: "mouse-visualizer",     name: "Mouse Visualizer",     desc: "Exibe cliques, botões laterais e scroll do mouse na overlay.", category: "overlay",   icon: "mouse-pointer-2", implemented: true  },
+    { id: "crosshair",            name: "Crosshair",            desc: "Mira customizável sempre centralizada na tela. Transparente e click-through.", category: "overlay", icon: "circle-dot",   implemented: true  },
     { id: "keystroke-history",    name: "Keystroke History",    desc: "Histórico das últimas teclas pressionadas, em faixa deslizante.", category: "overlay", icon: "history",         implemented: false },
     { id: "pubg-stats-overlay",   name: "PUBG Stats Overlay",   desc: "Exibe kills, damage, partidas e arma preferida via servidor local.", category: "overlay", icon: "bar-chart-2", implemented: true  },
     { id: "movement-wasd",        name: "WASD Trainer",         desc: "Exercícios de movimentação básica com visualização de sequência.", category: "movement", icon: "move",         implemented: false },
@@ -41,6 +42,15 @@ const uiState = {};
 REGISTRY.forEach(m => {
     uiState[m.id] = m.implemented ? "OFF" : "UNAVAILABLE";
 });
+
+/* Config da crosshair — sincronizada com o painel de configuração */
+const crosshairConfig = {
+    style: "cross",
+    color: "#00FF00",
+    outlineColor: "#000000",
+    outlineEnabled: true,
+    opacity: 0.9
+};
 
 
 /* ──────────────────────────────────────────────────────────
@@ -159,6 +169,14 @@ function refreshCard(id) {
             toggle.disabled = state === "UNAVAILABLE" || state === "STARTING" || state === "STOPPING";
         }
     });
+
+    /* Mostra/esconde painel de configuração da crosshair */
+    if (id === "crosshair") {
+        const panel = document.getElementById("crosshair-panel");
+        if (panel) {
+            panel.style.display = (state === "ON") ? "block" : "none";
+        }
+    }
 }
 
 
@@ -169,7 +187,7 @@ function refreshCard(id) {
 ────────────────────────────────────────────────────────── */
 
 /* Módulos que usam IPC com o processo main */
-const IPC_MODULES = new Set(["keyboard-visualizer", "mouse-visualizer", "pubg-stats-overlay"]);
+const IPC_MODULES = new Set(["keyboard-visualizer", "mouse-visualizer", "pubg-stats-overlay", "crosshair"]);
 
 async function handleToggle(id) {
     const current = uiState[id];
@@ -220,6 +238,7 @@ async function handleToggle(id) {
     }
 
     refreshCard(id);
+    updateDashboard();
 }
 
 
@@ -267,6 +286,67 @@ function stopOnlinePoll() {
 }
 
 
+
+
+/* ──────────────────────────────────────────────────────────
+   CROSSHAIR — Painel de configuração
+────────────────────────────────────────────────────────── */
+
+function applyCrosshairStyle(style) {
+    crosshairConfig.style = style;
+    document.querySelectorAll('#crosshair-style-buttons .style-btn, .style-buttons .style-btn').forEach(btn => {
+        const selected = btn.dataset.style === style;
+        btn.classList.toggle('active', selected);
+        btn.setAttribute('aria-pressed', String(selected));
+    });
+    sendCrosshairConfig();
+}
+
+function sendCrosshairConfig() {
+    if (!window.electronAPI || !window.electronAPI.crosshairConfig) return;
+    updateDashboard();
+    const color         = document.getElementById('crosshair-color')?.value || crosshairConfig.color;
+    const outlineColor  = document.getElementById('crosshair-outline-color')?.value || crosshairConfig.outlineColor;
+    const outlineEnabled = document.getElementById('crosshair-outline-enabled')?.checked ?? crosshairConfig.outlineEnabled;
+    const opacity       = parseFloat(document.getElementById('crosshair-opacity')?.value ?? crosshairConfig.opacity);
+    const size          = parseFloat(document.getElementById('crosshair-size')?.value ?? 10);
+    window.electronAPI.crosshairConfig({
+        style: crosshairConfig.style,
+        color,
+        outlineColor,
+        outlineEnabled,
+        size,
+        opacity
+    });
+}
+
+function initCrosshairPanel() {
+    /* Botões de estilo */
+    document.querySelectorAll('.style-btn').forEach(btn => {
+        btn.addEventListener('click', () => applyCrosshairStyle(btn.dataset.style));
+    });
+
+    /* Opacity range — atualizar label em tempo real */
+    const opacityInput = document.getElementById('crosshair-opacity');
+    const opacityValue = document.getElementById('crosshair-opacity-value');
+    if (opacityInput && opacityValue) {
+        opacityInput.addEventListener('input', () => {
+            opacityValue.textContent = parseFloat(opacityInput.value).toFixed(2);
+        });
+    }
+
+    const sizeInput = document.getElementById('crosshair-size');
+    const sizeValue = document.getElementById('crosshair-size-value');
+    if (sizeInput && sizeValue) {
+        sizeInput.addEventListener('input', () => {
+            sizeValue.textContent = sizeInput.value;
+            sendCrosshairConfig();
+        });
+    }
+
+    /* Botão Aplicar */
+    document.getElementById('crosshair-apply-btn')?.addEventListener('click', sendCrosshairConfig);
+}
 
 
 function renderGrid(containerId, category) {
@@ -324,6 +404,12 @@ function updateDashboard() {
         errors.forEach(def => errorGrid.appendChild(createCard(def)));
     } else {
         errorSection.style.display = "none";
+    }
+
+    /* Mostra/esconde painel de configuração da crosshair */
+    const crosshairPanel = document.getElementById("crosshair-panel");
+    if (crosshairPanel) {
+        crosshairPanel.style.display = (uiState["crosshair"] === "ON") ? "block" : "none";
     }
 }
 
@@ -403,3 +489,4 @@ window.electronAPI?.onModuleClosed?.((id) => {
 
 
 renderAll();
+initCrosshairPanel();

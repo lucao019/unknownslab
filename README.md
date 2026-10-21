@@ -51,7 +51,12 @@ Node.js / Express  (server.js — porta 5051)
   ▼
 OBS Browser Source          Electron Control Center
 (public/overlay.html)       (control-center/)
+                                │
+                                ├── UI → preload seguro → IPC
+                                └── Overlays independentes (teclado, mouse, crosshair)
 ```
+
+O overlay de crosshair é uma janela transparente do Electron com canvas 2D. A configuração é enviada pelo Control Center via IPC; o overlay não recebe acesso direto ao Node.js.
 
 ---
 
@@ -62,6 +67,7 @@ OBS Browser Source          Electron Control Center
 | PUBG Stats Overlay | ✅ Implementado | Exibe stats do dia via servidor local |
 | Keyboard Visualizer | ✅ Implementado | Teclas pressionadas em tempo real |
 | Mouse Visualizer | ✅ Implementado | Cliques, scroll e botões laterais do mouse |
+| Crosshair | ✅ Implementado | Mira estática com presets de ponto, cruz e círculo; cor, tamanho e opacidade configuráveis |
 | Keystroke History | 🔜 Fase 4 | Histórico de inputs em faixa |
 | WASD / Strafe Trainer | 🔜 Fase 5 | Exercícios de movimentação |
 | Session Recorder | 🔜 Fase 6 | Gravação de sessões de input |
@@ -123,6 +129,9 @@ Gera instalador e versão portátil em `H:\Unknowns-Lab-Build\`.
 | Overlay OBS | HTML + CSS + JS puro |
 | Control Center | Electron 34 |
 | UI | CSS custom (sem framework) |
+| Renderização da crosshair | Canvas 2D em janela Electron transparente |
+| Comunicação UI/overlays | `contextBridge` + IPC do Electron |
+| Captura do botão direito | `uiohook-napi` |
 | Ícones | Lucide (SVG inline) |
 | Build | electron-builder |
 | API externa | PUBG API oficial |

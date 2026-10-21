@@ -6,6 +6,29 @@ Formato: [versão] - data | o que mudou | o que foi testado.
 
 ---
 
+## [Unreleased] - 2026-10-21
+
+### Adicionado
+- Crosshair em janela Electron transparente, centralizada, click-through e escondida enquanto o botão direito está pressionado.
+- Presets estáticos de ponto, cruz e círculo, com controles de cor, tamanho e opacidade.
+- Configuração da crosshair encaminhada por IPC seguro e reaplicada após o overlay terminar de carregar.
+- Crosshair adicionada ao catálogo de módulos do Control Center.
+
+### Corrigido
+- Dashboard atualiza a lista e os contadores de módulos ativos e com erro após os toggles.
+- Overlays são fechados ao encerrar a janela principal; instâncias adicionais focam a janela existente.
+- Tamanho da crosshair atualiza durante o arraste do slider.
+
+### Segurança
+- IDs de módulos validados e configuração da crosshair sanitizada no processo principal.
+- URLs externas limitadas a HTTP/HTTPS e deslocamentos de overlay limitados.
+
+### Ferramentas e validação
+- Electron 34, Canvas 2D, `contextBridge`/IPC, `uiohook-napi` e `electron-builder`.
+- `node --check` nos arquivos JavaScript alterados: aprovado.
+- Build Windows x64 (NSIS e portátil): concluída com sucesso.
+- A validação visual em execução ainda não foi registrada.
+
 ## [0.6.0] - 2026-10-18
 
 ### Renomeado

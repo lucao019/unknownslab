@@ -7,10 +7,26 @@ const { app, BrowserWindow, ipcMain, shell, screen } = require("electron");
 const path = require("path");
 
 const isDev = process.argv.includes("--dev");
+const hasSingleInstanceLock = app.requestSingleInstanceLock();
 
-let mainWindow   = null;
-let kbOverlay    = null;
-let mouseOverlay = null;
+if (!hasSingleInstanceLock) app.quit();
+
+let mainWindow      = null;
+let kbOverlay       = null;
+let mouseOverlay    = null;
+let crosshairWindow = null;
+let crosshairReady  = false;
+let currentCrosshairConfig = {
+    style: "cross",
+    color: "#00FF00",
+    outlineColor: "#000000",
+    size: 10,
+    thickness: 2,
+    gap: 4,
+    opacity: 0.9
+};
+
+const VALID_MODULE_IDS = new Set(["keyboard-visualizer", "mouse-visualizer", "crosshair"]);
 
 /* ── Serviços ───────────────────────────────────────────── */
 const kbService         = require("./src/services/keyboard-visualizer.js");
@@ -34,6 +50,9 @@ function safeOverlayPosition(winWidth, winHeight, offsetX = 20, offsetY = 20) {
 
 /* Nível de sobreposição — garante ficar sobre jogos em modo janela */
 const OVERLAY_LEVEL = "screen-saver";
+
+/* Clamp helper — limita valores a um intervalo */
+const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
 
 
 /* ---------------------------------------------------------
@@ -70,7 +89,12 @@ function createMainWindow() {
         mainWindow.webContents.openDevTools({ mode: "detach" });
     }
 
-    mainWindow.on("closed", () => { mainWindow = null; });
+    mainWindow.on("closed", () => {
+        mainWindow = null;
+        for (const overlay of [kbOverlay, mouseOverlay, crosshairWindow]) {
+            if (overlay && !overlay.isDestroyed()) overlay.close();
+        }
+    });
 }
 
 
@@ -182,6 +206,106 @@ function createMouseOverlay() {
 
 
 /* ---------------------------------------------------------
+   CROSSHAIR — hook de RMB (esconde ao mirar)
+   uiohook já está disponível no processo main.
+   Registra listeners independentes da crosshair para
+   não interferir com o mouse-visualizer.
+--------------------------------------------------------- */
+const { uIOhook } = require("uiohook-napi");
+
+let rmbHookActive = false;
+
+function startRmbHook() {
+    if (rmbHookActive) return;
+
+    uIOhook.on("mousedown", _onRmbDown);
+    uIOhook.on("mouseup",   _onRmbUp);
+
+    /* Inicia o uiohook só se nenhum serviço já o fez */
+    try { uIOhook.start(); } catch (_) { /* já rodando — ok */ }
+
+    rmbHookActive = true;
+}
+
+function stopRmbHook() {
+    if (!rmbHookActive) return;
+    uIOhook.removeListener("mousedown", _onRmbDown);
+    uIOhook.removeListener("mouseup",   _onRmbUp);
+    rmbHookActive = false;
+}
+
+function _onRmbDown(e) {
+    if (e.button !== 2) return; // só RMB
+    if (crosshairWindow && !crosshairWindow.isDestroyed()) {
+        crosshairWindow.hide();
+    }
+}
+
+function _onRmbUp(e) {
+    if (e.button !== 2) return;
+    if (crosshairWindow && !crosshairWindow.isDestroyed()) {
+        crosshairWindow.show();
+    }
+}
+
+/* ---------------------------------------------------------
+   JANELA OVERLAY — CROSSHAIR
+--------------------------------------------------------- */
+
+function createCrosshairOverlay() {
+    if (crosshairWindow && !crosshairWindow.isDestroyed()) return;
+
+    const CROSSHAIR_W = 200, CROSSHAIR_H = 200;
+    const display = screen.getPrimaryDisplay();
+    const { width, height } = display.bounds;
+    const xPos = Math.round((width - CROSSHAIR_W) / 2);
+    const yPos = Math.round((height - CROSSHAIR_H) / 2);
+
+    crosshairWindow = new BrowserWindow({
+        width:  CROSSHAIR_W,
+        height: CROSSHAIR_H,
+        x: xPos,
+        y: yPos,
+        frame: false,
+        transparent: true,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        resizable: false,
+        focusable: false,
+        title: "Unknowns Lab — Crosshair",
+        webPreferences: {
+            preload: path.join(__dirname, "src", "overlay", "crosshair-preload.js"),
+            contextIsolation: true,
+            nodeIntegration: false,
+            devTools: isDev
+        }
+    });
+
+    crosshairReady = false;
+    crosshairWindow.webContents.once("did-finish-load", () => {
+        if (!crosshairWindow || crosshairWindow.isDestroyed()) return;
+        crosshairReady = true;
+        crosshairWindow.webContents.send("crosshair:update", currentCrosshairConfig);
+    });
+
+    crosshairWindow.setAlwaysOnTop(true, OVERLAY_LEVEL);
+    crosshairWindow.setIgnoreMouseEvents(true, { forward: true });
+    crosshairWindow.loadFile(path.join(__dirname, "src", "overlay", "crosshair.html"));
+
+    /* Inicia o hook de RMB ao abrir a crosshair */
+    startRmbHook();
+
+    crosshairWindow.on("closed", () => {
+        stopRmbHook();
+        crosshairWindow = null;
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send("module:closed", "crosshair");
+        }
+    });
+}
+
+
+/* ---------------------------------------------------------
    IPC — CONTROLES DA JANELA PRINCIPAL
 --------------------------------------------------------- */
 
@@ -193,7 +317,11 @@ ipcMain.on("window:maximize", () => {
 });
 
 ipcMain.on("window:close",        () => mainWindow?.close());
-ipcMain.on("shell:open-external", (_e, url) => shell.openExternal(url));
+ipcMain.on("shell:open-external", (_e, url) => {
+    if (typeof url === "string" && /^https?:\/\//i.test(url)) {
+        shell.openExternal(url);
+    }
+});
 
 
 /* ---------------------------------------------------------
@@ -204,7 +332,10 @@ ipcMain.on("overlay:move", (e, dx, dy) => {
     const win = BrowserWindow.fromWebContents(e.sender);
     if (!win || win.isDestroyed()) return;
     const [x, y] = win.getPosition();
-    win.setPosition(x + Math.round(dx), y + Math.round(dy));
+    win.setPosition(
+        x + Math.round(clamp(dx, -500, 500)),
+        y + Math.round(clamp(dy, -500, 500))
+    );
 });
 
 ipcMain.on("overlay:close", (e) => {
@@ -219,6 +350,7 @@ ipcMain.on("overlay:close", (e) => {
 --------------------------------------------------------- */
 
 ipcMain.handle("module:start", async (_e, id) => {
+    if (!VALID_MODULE_IDS.has(id)) return { ok: false, error: "Unknown module" };
     try {
         if (id === "keyboard-visualizer") {
             createKbOverlay();
@@ -226,6 +358,8 @@ ipcMain.handle("module:start", async (_e, id) => {
         } else if (id === "mouse-visualizer") {
             createMouseOverlay();
             await mouseService.start();
+        } else if (id === "crosshair") {
+            createCrosshairOverlay();
         }
         return { ok: true };
     } catch (err) {
@@ -234,6 +368,7 @@ ipcMain.handle("module:start", async (_e, id) => {
 });
 
 ipcMain.handle("module:stop", async (_e, id) => {
+    if (!VALID_MODULE_IDS.has(id)) return { ok: false, error: "Unknown module" };
     try {
         if (id === "keyboard-visualizer") {
             await kbService.stop();
@@ -241,6 +376,8 @@ ipcMain.handle("module:stop", async (_e, id) => {
         } else if (id === "mouse-visualizer") {
             await mouseService.stop();
             if (mouseOverlay && !mouseOverlay.isDestroyed()) mouseOverlay.close();
+        } else if (id === "crosshair") {
+            if (crosshairWindow && !crosshairWindow.isDestroyed()) crosshairWindow.close();
         }
         return { ok: true };
     } catch (err) {
@@ -259,19 +396,60 @@ ipcMain.handle("pubg-stats:data", () => {
     return pubgStatsService.getStatus();
 });
 
+/* Sanitiza e encaminha configuração de crosshair para a janela overlay.
+   Valida campos na fronteira de confiança antes de repassar ao renderer. */
+const VALID_CROSSHAIR_STYLES = new Set(["cross", "dot", "crossdot", "circle", "circledot", "cs", "pubg", "h1z1", "fortnite"]);
+
+function sanitizeCrosshairConfig(raw) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const style = VALID_CROSSHAIR_STYLES.has(raw.style) ? raw.style : "cross";
+
+    // Aceita apenas strings hex válidas (#RGB ou #RRGGBB); rejeita qualquer outra coisa.
+    const hexColor = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+    const color        = hexColor.test(raw.color)        ? raw.color        : "#00FF00";
+    const outlineColor = hexColor.test(raw.outlineColor) ? raw.outlineColor : null;
+
+    const size      = clamp(Number(raw.size)      || 10,  1, 100);
+    const thickness = clamp(Number(raw.thickness) || 2,   0.5, 20);
+    const gap       = clamp(Number(raw.gap)        || 4,  0, 50);
+    const opacity   = clamp(Number(raw.opacity)    || 0.9, 0, 1);
+
+    return { style, color, outlineColor, size, thickness, gap, opacity };
+}
+
+ipcMain.on("crosshair:config", (_e, rawConfig) => {
+    const config = sanitizeCrosshairConfig(rawConfig);
+    if (!config) return;
+    currentCrosshairConfig = config;
+    if (!crosshairReady || !crosshairWindow || crosshairWindow.isDestroyed()) return;
+    crosshairWindow.webContents.send("crosshair:update", config);
+});
+
 
 /* ---------------------------------------------------------
    CICLO DE VIDA
 --------------------------------------------------------- */
 
-app.whenReady().then(createMainWindow);
+app.whenReady().then(() => {
+    if (hasSingleInstanceLock) createMainWindow();
+});
+
+app.on("second-instance", () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+});
 
 app.on("window-all-closed", async () => {
+    if (!hasSingleInstanceLock) return;
     await kbService.stop().catch(() => {});
     await mouseService.stop().catch(() => {});
     app.quit();
 });
 
 app.on("activate", () => {
+    if (!hasSingleInstanceLock) return;
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
 });

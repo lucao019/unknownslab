@@ -57,6 +57,25 @@ const MODULE_REGISTRY = [
     },
 
     {
+        id: "crosshair",
+        name: "Crosshair",
+        desc: "Mira customizável sempre centralizada na tela. Transparente e click-through.",
+        category: "overlay",
+        icon: "circle-dot",
+        dependencies: [],
+        implemented: true,
+        defaultConfig: {
+            style: "cross",
+            color: "#00FF00",
+            outlineColor: "#000000",
+            size: 10,
+            thickness: 2,
+            gap: 4,
+            opacity: 0.9
+        }
+    },
+
+    {
         id: "keystroke-history",
         name: "Keystroke History",
         desc: "Histórico das últimas teclas pressionadas, em faixa deslizante.",
