@@ -10,7 +10,7 @@ Desenvolvido por **lucao99999999999** para uso próprio durante transmissões e 
 
 O Unknowns Lab começou como um overlay simples de estatísticas do PUBG para OBS. Virou um projeto maior: um **Control Center desktop** que centraliza e gerencia todas as ferramentas visuais e de análise usadas durante as lives.
 
-A ideia é ter controle real sobre o que aparece na tela, como os inputs são capturados e exibidos, e como as sessões são analisadas — sem depender de soluções de terceiros que você não controla.
+A versão atual combina os overlays e atalhos da mira com o **PUBG Performance Lab**: diagnóstico local do PC, leitura de sensores em tempo real e análise comparativa de perfis NVIDIA. A ideia é medir e explicar mudanças com fontes identificadas, sem inventar ganhos nem aplicar ajustes de sistema silenciosamente.
 
 ---
 
@@ -60,30 +60,45 @@ O overlay de crosshair é uma janela transparente do Electron com canvas 2D. O p
 
 ## PUBG Performance Lab
 
-A página **Enhancements** inclui diagnóstico local e monitoramento ao vivo opcional, atualizado a cada dois segundos. No Windows, o LibreHardwareMonitor coleta os sensores disponibilizados pela CPU, GPU, memória, placa-mãe e armazenamento; `nvidia-smi` complementa as leituras NVIDIA, incluindo VRAM e velocidade atual da ventoinha. Se a ponte não iniciar, o monitor usa as APIs locais do Node.js e `nvidia-smi` como fallback e informa essa condição. Sensores sem leitura são mostrados como indisponíveis; dados não são estimados. FPS/frametime exige um provedor de captura de frames compatível e não é inferido a partir do uso da GPU. O monitor é somente leitura: não muda energia, driver nem rotação de ventoinhas. Não há resultados de benchmark pré-carregados; comparações devem usar medições reais com fonte e condições registradas.
+A página **Enhancements** concentra ferramentas de diagnóstico e análise:
 
-O helper do LibreHardwareMonitor é compilado como executável Windows x64 self-contained antes do build (`npm run build`) e incluído em `extraResources`. As DLLs oficiais necessárias e a licença MPL 2.0 estão em `control-center/vendor/LibreHardwareMonitor/v0.9.6/`; o aplicativo não instala serviços nem solicita elevação automática.
+- **Diagnóstico local:** informações de CPU, memória, GPUs, monitores e armazenamento, com indicação da fonte e dos dados indisponíveis.
+- **Monitor ao vivo:** amostras a cada dois segundos. No Windows, o LibreHardwareMonitor lê os sensores oferecidos pelo hardware; `nvidia-smi` complementa a telemetria NVIDIA, incluindo VRAM e rotação atual da ventoinha. Se a ponte não iniciar, o app informa o fallback para as APIs do Node.js e `nvidia-smi`.
+- **Sensores sem leitura:** aparecem como indisponíveis, sem estimativas. Neste PC, a temperatura da CPU não foi disponibilizada como leitura válida.
+- **Somente leitura:** o monitor não altera energia, driver nem velocidade da ventoinha. FPS e frametime ainda não têm um provedor validado e não são deduzidos da carga da GPU.
+- **Perfis NVIDIA:** comparação local de um perfil `.nip`/XML escolhido pelo usuário. Exibe nome, executáveis e valores alterados, mas não aplica configurações nem verifica o perfil ativo no driver. Arquivos com múltiplos perfis são recusados para evitar comparações ambíguas.
+- **NVIDIA Control Panel e NVIDIA Profile Inspector:** o primeiro é a ferramenta oficial da NVIDIA; o segundo é um utilitário de terceiros. Não são equivalentes, e os valores de um arquivo exportado não comprovam o estado atualmente aplicado.
+- **Comparação antes/depois:** o tutorial orienta registrar condições e medições reais. Não há resultados de benchmark pré-carregados nem promessa de ganho de desempenho.
 
-O painel permite selecionar arquivos `.nip`/XML do NVIDIA Profile Inspector por uma caixa de diálogo nativa. A análise aceita um perfil por arquivo; exportações com vários perfis são recusadas para evitar misturar configurações. Para identificar diferenças, selecione o original e o recebido; o app mostra nome do perfil, executáveis e valores do XML, sem aplicar mudanças. O formato não informa a justificativa da recomendação e a ausência de uma opção num arquivo não prova que ela foi removida do driver. A comparação é entre arquivos, não entre o XML e as configurações atualmente aplicadas. O **NVIDIA Control Panel** é a interface oficial do fabricante; o **NVIDIA Profile Inspector** é um utilitário de terceiros. Eles não são equivalentes.
+O helper usa o LibreHardwareMonitor 0.9.6, com licença MPL 2.0 em `control-center/vendor/LibreHardwareMonitor/v0.9.6/`. O build publica a ponte Windows x64 como executável self-contained e a inclui no app. A aplicação não instala serviço nem solicita elevação automática.
 
----
+### O que vem pela frente
 
-## Módulos disponíveis
+Esta é uma direção de trabalho, não uma promessa de prazo:
 
-| Módulo | Estado | Descrição |
-|---|---|---|
-| PUBG Stats Overlay | ✅ Implementado | Exibe stats do dia via servidor local |
-| Keyboard Visualizer | ✅ Implementado | Teclas pressionadas em tempo real |
-| Mouse Visualizer | ✅ Implementado | Cliques, scroll e botões laterais do mouse |
-| Crosshair | ✅ Implementado | Mira estática com presets de ponto, cruz e círculo; cor, tamanho e opacidade configuráveis e salvos |
-| Keystroke History | 🔜 Fase 4 | Histórico de inputs em faixa |
-| WASD / Strafe Trainer | 🔜 Fase 5 | Exercícios de movimentação |
-| Session Recorder | 🔜 Fase 6 | Gravação de sessões de input |
-| Event Timeline | 🔜 Fase 6 | Linha do tempo de inputs |
-| OBS Integration | 🔜 Fase 7 | Controle de Browser Sources no OBS |
-| Tutorial Mode | 🔜 Fase 7 | Layout para gravação de tutoriais |
+1. **Fechar a distribuição Windows:** resolver a falha de memória do compilador NSIS para voltar a gerar e testar o instalador e o portable com o Electron 45. O build descompactado foi validado; a geração do instalador/portable mais recente ainda não terminou com sucesso neste ambiente.
+2. **Validar fontes para FPS e frametime:** integrar um provedor confiável, se compatível, e exibir claramente limitações e dados ausentes.
+3. **Ampliar a análise de desempenho:** guardar medições antes/depois com fonte, horário e condições para comparar resultados reais.
+4. **Implementar análise de inputs:** histórico, gravação de sessão, intervalos e linha do tempo só serão ativados depois de implementados, revisados quanto à privacidade e testados.
+5. **Evoluir a integração de streaming e treino:** conexão com OBS e exercícios de movimento permanecem planejados, não são recursos funcionais nesta versão.
 
-Módulos marcados como 🔜 aparecem no Control Center como **INDISPONÍVEL** até sua implementação real e validação. Nenhum módulo é marcado como funcional sem estar testado.
+Controle de ventoinhas não faz parte do monitor: leituras continuam somente observação e nenhum comando de velocidade é enviado.
+
+### Recursos disponíveis e planejados
+
+| Recurso | Estado |
+|---|---|
+| PUBG Stats Overlay para OBS | Implementado; usa o servidor local de stats |
+| Visualizadores de teclado e mouse | Implementados |
+| Crosshair configurável, binds e prévia arrastável | Implementado |
+| Diagnóstico e sensores de hardware ao vivo | Implementados; dependem dos sensores disponíveis no PC |
+| Comparação de arquivos NVIDIA `.nip`/XML | Implementada; leitura/comparação, sem aplicação |
+| Medição de FPS/frametime | Planejada; provedor ainda não validado |
+| Keystroke History e Session Recorder | Planejados; indisponíveis até implementação e validação |
+| Event Timeline e Input Intervals | Planejados; dependem da gravação de sessão |
+| Treinadores WASD/strafe e integração OBS | Planejados; ainda não implementados |
+
+Os itens planejados não devem ser interpretados como recursos já disponíveis no app.
 
 ---
 
@@ -91,7 +106,9 @@ Módulos marcados como 🔜 aparecem no Control Center como **INDISPONÍVEL** at
 
 ### Pré-requisitos
 
-- Node.js 18+
+- Node.js 18 ou superior
+- .NET 10 SDK apenas para compilar o Control Center e a ponte de sensores
+- Windows x64 para usar e empacotar o Control Center e os sensores LibreHardwareMonitor
 - Chave da PUBG API em `.env`:
   ```
   PUBG_API_KEY=sua_chave_aqui
@@ -112,11 +129,11 @@ Overlay para OBS: `http://localhost:5051/overlay.html`
 
 ```bash
 cd control-center
-npm install
+npm ci
 npm start
 ```
 
-Ou usa o executável gerado em `H:\Unknowns-Lab-Build\`.
+O app distribuído inclui a ponte de sensores; o .NET SDK não é necessário para apenas executar uma versão já compilada. O executável descompactado validado está em `H:\Unknowns-Lab-Build\win-unpacked\Unknowns Lab.exe`.
 
 ### Build do executável
 
@@ -125,7 +142,7 @@ cd control-center
 npm run build
 ```
 
-Gera instalador e versão portátil em `H:\Unknowns-Lab-Build\`.
+O script publica primeiro o helper com `dotnet publish` e depois solicita ao electron-builder o instalador e a versão portátil em `H:\Unknowns-Lab-Build\`. No ambiente de desenvolvimento atual, a publicação do helper e o build descompactado passaram, mas o compilador NSIS falhou ao mapear memória ao gerar os artefatos instaláveis. Consulte **Limitações conhecidas** antes de considerar essa distribuição pronta.
 
 ---
 
@@ -135,11 +152,12 @@ Gera instalador e versão portátil em `H:\Unknowns-Lab-Build\`.
 |---|---|
 | Servidor de stats | Node.js + Express |
 | Overlay OBS | HTML + CSS + JS puro |
-| Control Center | Electron 34 |
+| Control Center | Electron 45 |
 | UI | CSS custom (sem framework) |
 | Renderização da crosshair | Canvas 2D em janela Electron transparente |
 | Comunicação UI/overlays | `contextBridge` + IPC do Electron |
 | Captura do botão direito | `uiohook-napi` |
+| Sensores ao vivo | LibreHardwareMonitor 0.9.6 e `nvidia-smi` (somente leitura) |
 | Ícones | Lucide (SVG inline) |
 | Build | electron-builder |
 | API externa | PUBG API oficial |
@@ -163,6 +181,9 @@ Gera instalador e versão portátil em `H:\Unknowns-Lab-Build\`.
 
 - O servidor de stats depende da PUBG API oficial — sujeito a rate limit e disponibilidade externa.
 - O Control Center não inicia o servidor automaticamente nesta versão — ambos precisam ser iniciados separadamente.
+- FPS/frametime e temperatura da CPU não têm uma fonte válida disponível nesta máquina. O monitor mostra indisponibilidade em vez de estimar valores.
+- A versão atualizada do Electron 45 abre e o build descompactado foi testado. A geração do instalador NSIS e do portable falhou no compilador NSIS com erro de alocação de memória; os artefatos instaláveis anteriores não incluem as atualizações mais recentes.
+- A auditoria npm do Control Center ainda reporta vulnerabilidades moderadas transitivas na cadeia de build (`electron-builder` e dependências). O projeto raiz não reporta vulnerabilidades na última verificação.
 - Executáveis gerados sem certificado de código assinado ativam o SmartScreen no Windows. Solução: clique direito → Propriedades → Desbloquear, ou `Unblock-File` via PowerShell.
 - Fonte Inter carregada via Google Fonts — requer conexão na primeira execução. Fallback: Segoe UI.
 
