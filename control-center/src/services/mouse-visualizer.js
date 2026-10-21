@@ -5,7 +5,7 @@
    Envia eventos para a janela overlay via webContents.
 ========================================================= */
 
-const { uIOhook } = require("uiohook-napi");
+const inputHook = require("./global-input-hook.js");
 
 /* Botões do uiohook */
 const BUTTON_MAP = {
@@ -28,48 +28,36 @@ const service = {
     async start() {
         if (isRunning) return;
 
-        uIOhook.on("mousedown", (e) => {
+        const onMouseDown = (e) => {
             const label = BUTTON_MAP[e.button];
             if (!label) return;
             this._emit("mousedown", label);
-        });
+        };
 
-        uIOhook.on("mouseup", (e) => {
+        const onMouseUp = (e) => {
             const label = BUTTON_MAP[e.button];
             if (!label) return;
             this._emit("mouseup", label);
-        });
+        };
 
-        uIOhook.on("wheel", (e) => {
+        const onWheel = (e) => {
             /* rotation > 0 = scroll down, < 0 = scroll up no uiohook */
             const label = e.rotation > 0 ? "SCROLL_DOWN" : "SCROLL_UP";
             this._emit("wheel", label);
+        };
+
+        inputHook.start("mouse-visualizer", {
+            mousedown: onMouseDown,
+            mouseup: onMouseUp,
+            wheel: onWheel
         });
-
-        /* uiohook pode já estar rodando pelo keyboard-visualizer —
-           só chama start() se não estiver */
-        try {
-            uIOhook.start();
-        } catch (_) {
-            /* já estava rodando — ok */
-        }
-
         isRunning = true;
     },
 
     async stop() {
         if (!isRunning) return;
 
-        uIOhook.removeAllListeners("mousedown");
-        uIOhook.removeAllListeners("mouseup");
-        uIOhook.removeAllListeners("wheel");
-
-        /* Só para o uiohook se o keyboard também não estiver rodando */
-        const kbService = require("./keyboard-visualizer.js");
-        if (!kbService.getStatus().running) {
-            uIOhook.stop();
-        }
-
+        inputHook.stop("mouse-visualizer");
         isRunning = false;
         this._emit("clear", null);
     },

@@ -3,7 +3,7 @@
    Processo Main do Electron
 ========================================================= */
 
-const { app, BrowserWindow, ipcMain, shell, screen } = require("electron");
+const { app, BrowserWindow, ipcMain, shell, screen, dialog } = require("electron");
 const fs = require("fs");
 const path = require("path");
 
@@ -24,8 +24,7 @@ const DEFAULT_CROSSHAIR_CONFIG = {
     size: 10,
     thickness: 2,
     gap: 4,
-    opacity: 0.9,
-    fullscreen: false
+    opacity: 0.9
 };
 let currentCrosshairConfig = { ...DEFAULT_CROSSHAIR_CONFIG };
 
@@ -36,7 +35,33 @@ const kbService         = require("./src/services/keyboard-visualizer.js");
 const mouseService      = require("./src/services/mouse-visualizer.js");
 const pubgStatsService  = require("./src/services/pubg-stats.js");
 const monitorPubgForeground = require("./src/services/pubg-foreground-monitor.js");
+const { collectHardwareDiagnostics } = require("./src/services/hardware-diagnostics.js");
+const {
+    startLiveHardwareMonitor,
+    stopLiveHardwareMonitor
+} = require("./src/services/live-hardware-monitor.js");
 let stopPubgForegroundMonitor = null;
+
+function decodeXmlFile(buffer) {
+    if (buffer.length >= 2 && buffer[0] === 0xff && buffer[1] === 0xfe) {
+        if ((buffer.length - 2) % 2 !== 0) throw new Error("O arquivo XML UTF-16LE contém um número inválido de bytes.");
+        return buffer.toString("utf16le", 2).replace(/^\uFEFF/, "");
+    }
+    if (buffer.length >= 2 && buffer[0] === 0xfe && buffer[1] === 0xff) {
+        if ((buffer.length - 2) % 2 !== 0) throw new Error("O arquivo XML UTF-16BE contém um número inválido de bytes.");
+        return Buffer.from(buffer.subarray(2)).swap16().toString("utf16le").replace(/^\uFEFF/, "");
+    }
+    if (buffer.length >= 2 && buffer[0] === 0x3c && buffer[1] === 0x00) {
+        if (buffer.length % 2 !== 0) throw new Error("O arquivo XML UTF-16LE contém um número inválido de bytes.");
+        return buffer.toString("utf16le").replace(/^\uFEFF/, "");
+    }
+    if (buffer.length >= 2 && buffer[0] === 0x00 && buffer[1] === 0x3c) {
+        if (buffer.length % 2 !== 0) throw new Error("O arquivo XML UTF-16BE contém um número inválido de bytes.");
+        if (buffer.length % 2 !== 0) throw new Error("O arquivo XML UTF-16BE contém um número inválido de bytes.");
+        return Buffer.from(buffer).swap16().toString("utf16le").replace(/^\uFEFF/, "");
+    }
+    return buffer.toString("utf8").replace(/^\uFEFF/, "");
+}
 
 
 /* ---------------------------------------------------------
@@ -95,6 +120,7 @@ function createMainWindow() {
     }
 
     mainWindow.on("closed", () => {
+        stopLiveHardwareMonitor();
         mainWindow = null;
         for (const overlay of [kbOverlay, mouseOverlay, crosshairWindow]) {
             if (overlay && !overlay.isDestroyed()) overlay.close();
@@ -216,27 +242,69 @@ function createMouseOverlay() {
    Registra listeners independentes da crosshair para
    não interferir com o mouse-visualizer.
 --------------------------------------------------------- */
-const { uIOhook } = require("uiohook-napi");
+const inputHook = require("./src/services/global-input-hook.js");
+const { UiohookKey } = require("uiohook-napi");
 
 let rmbHookActive = false;
+const pressedCrosshairKeys = new Set();
+const CROSSHAIR_STYLES = ["dot", "cross", "circle"];
+const CROSSHAIR_COLORS = ["#00FF00", "#FF0000", "#00A2FF", "#FFFF00", "#FFFFFF", "#FF00FF"];
 
 function startRmbHook() {
     if (rmbHookActive) return;
 
-    uIOhook.on("mousedown", _onRmbDown);
-    uIOhook.on("mouseup",   _onRmbUp);
-
-    /* Inicia o uiohook só se nenhum serviço já o fez */
-    try { uIOhook.start(); } catch (_) { /* já rodando — ok */ }
-
+    inputHook.start("crosshair", {
+        mousedown: _onRmbDown,
+        mouseup: _onRmbUp,
+        keydown: _onCrosshairKeyDown,
+        keyup: _onCrosshairKeyUp,
+        wheel: _onCrosshairWheel
+    });
     rmbHookActive = true;
 }
 
 function stopRmbHook() {
     if (!rmbHookActive) return;
-    uIOhook.removeListener("mousedown", _onRmbDown);
-    uIOhook.removeListener("mouseup",   _onRmbUp);
+    inputHook.stop("crosshair");
+    pressedCrosshairKeys.clear();
     rmbHookActive = false;
+}
+
+function isCrosshairInputContextActive() {
+    const overlayVisible = crosshairWindow && !crosshairWindow.isDestroyed() && crosshairWindow.isVisible();
+    const controlCenterFocused = mainWindow && !mainWindow.isDestroyed() && mainWindow.isFocused();
+    return overlayVisible || controlCenterFocused;
+}
+
+function _onCrosshairKeyDown(e) {
+    if (!isCrosshairInputContextActive()) return;
+    if (pressedCrosshairKeys.has(e.keycode)) return;
+    pressedCrosshairKeys.add(e.keycode);
+
+    if (e.keycode === UiohookKey.Backquote || e.keycode === UiohookKey.BracketLeft) {
+        const currentIndex = CROSSHAIR_STYLES.indexOf(currentCrosshairConfig.style);
+        const direction = e.keycode === UiohookKey.BracketLeft ? 1 : -1;
+        const nextIndex = (currentIndex + direction + CROSSHAIR_STYLES.length) % CROSSHAIR_STYLES.length;
+        updateCrosshairConfig({ ...currentCrosshairConfig, style: CROSSHAIR_STYLES[nextIndex] }, "bind");
+    } else if (e.keycode === UiohookKey.Quote || e.keycode === UiohookKey.BracketRight) {
+        const currentIndex = CROSSHAIR_COLORS.indexOf(currentCrosshairConfig.color.toUpperCase());
+        const direction = e.keycode === UiohookKey.BracketRight ? 1 : -1;
+        const nextIndex = (currentIndex + direction + CROSSHAIR_COLORS.length) % CROSSHAIR_COLORS.length;
+        updateCrosshairConfig({ ...currentCrosshairConfig, color: CROSSHAIR_COLORS[nextIndex] }, "bind");
+    }
+}
+
+function _onCrosshairKeyUp(e) {
+    pressedCrosshairKeys.delete(e.keycode);
+}
+
+function _onCrosshairWheel(e) {
+    if (!e.ctrlKey || !isCrosshairInputContextActive()) return;
+    const direction = e.rotation < 0 ? 1 : -1;
+    const size = clamp(currentCrosshairConfig.size + direction, 2, 40);
+    if (size !== currentCrosshairConfig.size) {
+        updateCrosshairConfig({ ...currentCrosshairConfig, size }, "bind");
+    }
 }
 
 function _onRmbDown(e) {
@@ -278,7 +346,6 @@ function createCrosshairOverlay() {
         resizable: false,
         focusable: false,
         show: false,
-        fullscreen: currentCrosshairConfig.fullscreen,
         title: "Unknowns Lab — Crosshair",
         webPreferences: {
             preload: path.join(__dirname, "src", "overlay", "crosshair-preload.js"),
@@ -293,10 +360,22 @@ function createCrosshairOverlay() {
         if (!crosshairWindow || crosshairWindow.isDestroyed()) return;
         crosshairReady = true;
         crosshairWindow.webContents.send("crosshair:update", currentCrosshairConfig);
-        stopPubgForegroundMonitor = monitorPubgForeground((isPubgActive) => {
+        stopPubgForegroundMonitor = monitorPubgForeground(({ active, bounds }) => {
             if (!crosshairWindow || crosshairWindow.isDestroyed()) return;
-            if (isPubgActive) crosshairWindow.showInactive();
-            else crosshairWindow.hide();
+            if (!active) {
+                crosshairWindow.hide();
+                return;
+            }
+
+            const gameCenter = screen.screenToDipPoint({
+                x: bounds.x + bounds.width / 2,
+                y: bounds.y + bounds.height / 2
+            });
+            crosshairWindow.setPosition(
+                Math.round(gameCenter.x - crosshairWindow.getBounds().width / 2),
+                Math.round(gameCenter.y - crosshairWindow.getBounds().height / 2)
+            );
+            crosshairWindow.showInactive();
         });
     });
 
@@ -410,6 +489,73 @@ ipcMain.handle("pubg-stats:data", () => {
     return pubgStatsService.getStatus();
 });
 
+ipcMain.handle("hardware-diagnostics:collect", async (event) => {
+    if (!mainWindow || mainWindow.isDestroyed() || event.sender !== mainWindow.webContents) {
+        throw new Error("Solicitação de diagnóstico não autorizada.");
+    }
+
+    return collectHardwareDiagnostics(screen.getAllDisplays());
+});
+
+ipcMain.handle("hardware-monitor:start", async (event) => {
+    if (!mainWindow || mainWindow.isDestroyed() || event.sender !== mainWindow.webContents) {
+        throw new Error("Solicitação de monitoramento não autorizada.");
+    }
+
+    return startLiveHardwareMonitor(snapshot => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send("hardware-monitor:update", snapshot);
+        }
+    });
+});
+
+ipcMain.handle("hardware-monitor:stop", (event) => {
+    if (!mainWindow || mainWindow.isDestroyed() || event.sender !== mainWindow.webContents) {
+        throw new Error("Solicitação para parar monitoramento não autorizada.");
+    }
+    return stopLiveHardwareMonitor();
+});
+
+ipcMain.handle("nip-profile:open", async (event) => {
+    if (!mainWindow || mainWindow.isDestroyed() || event.sender !== mainWindow.webContents) {
+        throw new Error("Solicitação de leitura de perfil não autorizada.");
+    }
+
+    const selection = await dialog.showOpenDialog(mainWindow, {
+        title: "Selecionar perfil NVIDIA para análise",
+        properties: ["openFile"],
+        filters: [{ name: "Perfis NVIDIA", extensions: ["nip", "xml"] }]
+    });
+    if (selection.canceled || selection.filePaths.length === 0) {
+        return { canceled: true };
+    }
+
+    const filePath = selection.filePaths[0];
+    const extension = path.extname(filePath).toLowerCase();
+    if (extension !== ".nip" && extension !== ".xml") {
+        throw new Error("Selecione um arquivo .nip ou XML exportado pelo NVIDIA Profile Inspector.");
+    }
+
+    const maximumSize = 2 * 1024 * 1024;
+    const fileInfo = await fs.promises.stat(filePath);
+    if (!fileInfo.isFile()) {
+        throw new Error("O caminho selecionado não é um arquivo.");
+    }
+    if (fileInfo.size > maximumSize) {
+        throw new Error("O arquivo excede o limite de 2 MB para análise.");
+    }
+    const file = await fs.promises.readFile(filePath);
+    if (file.length > maximumSize) {
+        throw new Error("O arquivo excede o limite de 2 MB para análise.");
+    }
+
+    return {
+        canceled: false,
+        name: path.basename(filePath),
+        content: decodeXmlFile(file)
+    };
+});
+
 ipcMain.handle("crosshair:get-config", () => currentCrosshairConfig);
 
 /* Sanitiza e encaminha configuração de crosshair para a janela overlay.
@@ -430,9 +576,7 @@ function sanitizeCrosshairConfig(raw) {
     const thickness = clamp(Number(raw.thickness) || 2,   0.5, 20);
     const gap       = clamp(Number(raw.gap)        || 4,  0, 50);
     const opacity   = clamp(Number(raw.opacity)    || 0.9, 0, 1);
-    const fullscreen = raw.fullscreen === true;
-
-    return { style, color, outlineColor, size, thickness, gap, opacity, fullscreen };
+    return { style, color, outlineColor, size, thickness, gap, opacity };
 }
 
 function loadCrosshairConfig() {
@@ -458,14 +602,18 @@ function saveCrosshairConfig(config) {
 ipcMain.on("crosshair:config", (_e, rawConfig) => {
     const config = sanitizeCrosshairConfig(rawConfig);
     if (!config) return;
+    updateCrosshairConfig(config, "panel");
+});
+
+function updateCrosshairConfig(config, source) {
     currentCrosshairConfig = config;
     saveCrosshairConfig(config);
-    if (!crosshairReady || !crosshairWindow || crosshairWindow.isDestroyed()) return;
-    if (crosshairWindow.isFullScreen() !== config.fullscreen) {
-        crosshairWindow.setFullScreen(config.fullscreen);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send("crosshair:config-updated", config, source);
     }
+    if (!crosshairReady || !crosshairWindow || crosshairWindow.isDestroyed()) return;
     crosshairWindow.webContents.send("crosshair:update", config);
-});
+}
 
 
 /* ---------------------------------------------------------

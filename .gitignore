@@ -2,3 +2,6 @@
 node_modules/
 control-center/node_modules/
 control-center/dist/
+control-center/hardware-sensor-bridge/bin/
+control-center/hardware-sensor-bridge/obj/
+control-center/hardware-sensor-bridge/publish/

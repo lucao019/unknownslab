@@ -5,8 +5,9 @@
    Envia eventos para a janela overlay via webContents.
 ========================================================= */
 
-const { uIOhook, UiohookKey } = require("uiohook-napi");
+const { UiohookKey } = require("uiohook-napi");
 const path = require("path");
+const inputHook = require("./global-input-hook.js");
 
 /* Teclas relevantes para PUBG — exibidas na overlay */
 const GAME_KEYS = {
@@ -51,28 +52,29 @@ const service = {
     async start() {
         if (isRunning) return;
 
-        uIOhook.on("keydown", (e) => {
+        const onKeyDown = (e) => {
             const label = GAME_KEYS[e.keycode];
             if (!label) return;
             this._emit("keydown", label, e.keycode);
-        });
+        };
 
-        uIOhook.on("keyup", (e) => {
+        const onKeyUp = (e) => {
             const label = GAME_KEYS[e.keycode];
             if (!label) return;
             this._emit("keyup", label, e.keycode);
-        });
+        };
 
-        uIOhook.start();
+        inputHook.start("keyboard-visualizer", {
+            keydown: onKeyDown,
+            keyup: onKeyUp
+        });
         isRunning = true;
     },
 
     async stop() {
         if (!isRunning) return;
 
-        uIOhook.stop();
-        uIOhook.removeAllListeners("keydown");
-        uIOhook.removeAllListeners("keyup");
+        inputHook.stop("keyboard-visualizer");
         isRunning = false;
 
         /* Avisa overlay para limpar estado */

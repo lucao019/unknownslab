@@ -12,10 +12,51 @@ public static class ForegroundWindow {
     [DllImport("user32.dll")]
     private static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
 
-    public static uint GetProcessId() {
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool GetClientRect(IntPtr window, out Rect rect);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool ClientToScreen(IntPtr window, ref Point point);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Rect {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Point {
+        public int X;
+        public int Y;
+    }
+
+    public static string GetForegroundGameBounds() {
+        IntPtr window = GetForegroundWindow();
         uint processId;
-        GetWindowThreadProcessId(GetForegroundWindow(), out processId);
-        return processId;
+        GetWindowThreadProcessId(window, out processId);
+        if (processId == 0) return "";
+
+        try {
+            using (var process = System.Diagnostics.Process.GetProcessById((int)processId)) {
+                if (!process.ProcessName.Equals("TslGame", StringComparison.OrdinalIgnoreCase)) return "";
+            }
+        } catch (ArgumentException) {
+            return "";
+        } catch (InvalidOperationException) {
+            return "";
+        }
+
+        Rect rect;
+        if (!GetClientRect(window, out rect)) return "";
+
+        Point topLeft = new Point { X = rect.Left, Y = rect.Top };
+        Point bottomRight = new Point { X = rect.Right, Y = rect.Bottom };
+        if (!ClientToScreen(window, ref topLeft) || !ClientToScreen(window, ref bottomRight)) return "";
+
+        return String.Format("{0},{1},{2},{3}", topLeft.X, topLeft.Y,
+            bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
     }
 }
 '@
@@ -23,18 +64,8 @@ public static class ForegroundWindow {
 Add-Type -TypeDefinition $source -ErrorAction Stop
 $lastState = ''
 while ($true) {
-    $state = '0'
-    $foregroundProcessId = [ForegroundWindow]::GetProcessId()
-    if ($foregroundProcessId -gt 0) {
-        try {
-            $process = [Diagnostics.Process]::GetProcessById([int]$foregroundProcessId)
-            if ($process.ProcessName -ieq 'TslGame') {
-                $state = '1'
-            }
-        } catch [System.ArgumentException] {
-        } catch [System.InvalidOperationException] {
-        }
-    }
+    $bounds = [ForegroundWindow]::GetForegroundGameBounds()
+    $state = if ($bounds) { "1|$bounds" } else { '0' }
     if ($state -ne $lastState) {
         [Console]::Out.WriteLine($state)
         [Console]::Out.Flush()
@@ -62,7 +93,7 @@ function monitorPubgForeground(onChange) {
 
     let stopped = false;
     let output = "";
-    onChange(false);
+    onChange({ active: false });
 
     monitor.stdout.setEncoding("utf8");
     monitor.stdout.on("data", (chunk) => {
@@ -70,8 +101,15 @@ function monitorPubgForeground(onChange) {
         const lines = output.split(/\r?\n/);
         output = lines.pop();
         for (const line of lines) {
-            if (line === "1") onChange(true);
-            else if (line === "0") onChange(false);
+            if (line === "0") {
+                onChange({ active: false });
+                continue;
+            }
+
+            const [active, x, y, width, height] = line.split("|").map(Number);
+            if (active === 1 && [x, y, width, height].every(Number.isFinite) && width > 0 && height > 0) {
+                onChange({ active: true, bounds: { x, y, width, height } });
+            }
         }
     });
 
@@ -83,19 +121,19 @@ function monitorPubgForeground(onChange) {
     monitor.on("error", (error) => {
         if (stopped) return;
         console.error("Falha ao iniciar o monitor da janela ativa do PUBG:", error.message);
-        onChange(false);
+        onChange({ active: false });
     });
 
     monitor.on("close", (code) => {
         if (stopped) return;
         console.error(`O monitor da janela ativa do PUBG foi encerrado (código ${code}).`);
-        onChange(false);
+        onChange({ active: false });
     });
 
     return () => {
         stopped = true;
         monitor.kill();
-        onChange(false);
+        onChange({ active: false });
     };
 }
 

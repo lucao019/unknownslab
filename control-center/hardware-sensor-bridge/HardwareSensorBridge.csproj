@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>HardwareSensorBridge</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="LibreHardwareMonitorLib">
+      <HintPath>..\vendor\LibreHardwareMonitor\v0.9.6\LibreHardwareMonitorLib.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="BlackSharp.Core">
+      <HintPath>..\vendor\LibreHardwareMonitor\v0.9.6\BlackSharp.Core.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="DiskInfoToolkit">
+      <HintPath>..\vendor\LibreHardwareMonitor\v0.9.6\DiskInfoToolkit.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="HidSharp">
+      <HintPath>..\vendor\LibreHardwareMonitor\v0.9.6\HidSharp.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="RAMSPDToolkit-NDD">
+      <HintPath>..\vendor\LibreHardwareMonitor\v0.9.6\RAMSPDToolkit-NDD.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="System.IO.Ports">
+      <HintPath>..\vendor\LibreHardwareMonitor\v0.9.6\System.IO.Ports.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="System.Management">
+      <HintPath>..\vendor\LibreHardwareMonitor\v0.9.6\System.Management.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

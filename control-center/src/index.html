@@ -70,6 +70,16 @@
                         </a>
                     </li>
                     <li class="sidebar__nav-item">
+                        <a class="sidebar__nav-link" data-page="enhancements" href="#">
+                            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/>
+                                <path d="m5.64 5.64 2.12 2.12"/><path d="m16.24 16.24 2.12 2.12"/>
+                                <path d="m18.36 5.64-2.12 2.12"/><path d="m7.76 16.24-2.12 2.12"/><circle cx="12" cy="12" r="4"/>
+                            </svg>
+                            Enhancements
+                        </a>
+                    </li>
+                    <li class="sidebar__nav-item">
                         <a class="sidebar__nav-link" data-page="movement" href="#">
                             <!-- Lucide: move -->
                             <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
@@ -185,7 +195,11 @@
                 <div id="crosshair-panel" style="display:none" class="crosshair-config-panel">
                   <h3 class="panel-title">Crosshair — Configuração</h3>
                   <p class="config-hint">A mira aparece somente enquanto a janela do PUBG estiver ativa.</p>
+                  <p class="config-hint">Atalhos: ~ / [ troca o tipo, ´ / ] troca a cor e Ctrl + scroll ajusta o tamanho. Com o jogo fechado, deixe esta janela em foco para testar na prévia.</p>
+                  <p class="config-hint">Arraste a prévia pela alça para reposicioná-la no painel; use as setas quando a alça estiver selecionada.</p>
 
+                  <div class="crosshair-config-layout">
+                    <div class="crosshair-config-controls">
                                     <div class="style-section">
                                         <label class="config-label">Modelo</label>
                                         <div class="style-buttons" id="crosshair-style-buttons" role="group" aria-label="Modelo da mira">
@@ -215,16 +229,207 @@
                     <span id="crosshair-size-value" class="range-value">10</span>
                   </div>
 
-                                    <div class="config-row">
-                                        <label class="config-label" for="crosshair-fullscreen">Modo tela cheia sem bordas</label>
-                                        <input type="checkbox" id="crosshair-fullscreen">
-                                    </div>
-
                   <!-- Botão aplicar -->
                   <div class="config-row">
                     <button id="crosshair-apply-btn" class="btn-apply">Aplicar</button>
                   </div>
+                    </div>
+                    <aside class="crosshair-preview">
+                      <div class="crosshair-preview__header">
+                        <button type="button" class="crosshair-preview__drag-handle" aria-label="Arrastar prévia pelo painel; use as setas para mover" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight">
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <circle cx="5" cy="3" r="1"/><circle cx="11" cy="3" r="1"/>
+                            <circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/>
+                            <circle cx="5" cy="13" r="1"/><circle cx="11" cy="13" r="1"/>
+                          </svg>
+                          <span class="crosshair-preview__title">Prévia no jogo</span>
+                        </button>
+                      </div>
+                      <div class="crosshair-preview__scene">
+                        <canvas id="crosshair-preview-canvas" width="200" height="200" aria-label="Prévia da mira selecionada"></canvas>
+                        <span class="crosshair-preview__center" aria-hidden="true"></span>
+                      </div>
+                      <p>Visualização aproximada no centro da tela.</p>
+                    </aside>
+                  </div>
                 </div>
+            </section>
+
+            <!-- PUBG PERFORMANCE LAB -->
+            <section class="page" id="page-enhancements">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-header__title">PUBG Performance Lab</h1>
+                        <p class="page-header__subtitle">Enhancements para NVIDIA, input lag, FPS e clareza visual — com comparação mensurável.</p>
+                    </div>
+                </div>
+
+                <div class="performance-notice" role="status">
+                    <span class="performance-notice__dot" aria-hidden="true"></span>
+                    <div>
+                        <strong>Modo informativo</strong>
+                        <p>Nenhuma configuração do driver ou do Windows está sendo alterada. Leitura e aplicação serão habilitadas somente com fonte verificável, prévia das mudanças e confirmação.</p>
+                    </div>
+                </div>
+
+                <section class="enhancement-section" aria-labelledby="live-monitor-title">
+                    <div class="enhancement-section__heading">
+                        <div>
+                            <h2 id="live-monitor-title">Monitor de hardware ao vivo</h2>
+                            <p>Leitura local a cada 2 segundos. Não altera energia, driver ou ventoinhas.</p>
+                        </div>
+                        <button class="diagnostics-button" id="hardware-monitor-toggle" type="button">Iniciar monitoramento</button>
+                    </div>
+                    <p class="diagnostics-status" id="hardware-monitor-status" role="status" aria-live="polite">Monitor parado. Inicie para ver os sensores atualmente disponíveis.</p>
+                    <div class="diagnostics-grid" id="hardware-monitor-results" aria-live="polite"></div>
+                    <details class="hardware-sensors-details">
+                        <summary>Todos os sensores detectados</summary>
+                        <div class="diagnostics-grid" id="hardware-monitor-sensors"></div>
+                    </details>
+                    <ul class="diagnostics-warnings" id="hardware-monitor-warnings" hidden></ul>
+                    <div class="profile-review__guardrail">
+                        <strong>Ventoinhas e FPS</strong>
+                        <span>A velocidade atual e demais sensores de ventoinha serão mostrados quando o hardware disponibilizar esses dados. O monitor é somente leitura; nenhuma rotação será alterada. FPS/frametime só aparecerá quando houver um provedor de captura validado.</span>
+                    </div>
+                </section>
+
+                <section class="enhancement-section" aria-labelledby="hardware-diagnostics-title">
+                    <div class="enhancement-section__heading">
+                        <div>
+                            <h2 id="hardware-diagnostics-title">Diagnóstico do sistema</h2>
+                            <p>Consulta local, somente leitura. Os dados são coletados apenas quando você solicitar.</p>
+                        </div>
+                        <button class="diagnostics-button" id="hardware-diagnostics-refresh" type="button">Coletar diagnóstico</button>
+                    </div>
+                    <p class="diagnostics-status" id="hardware-diagnostics-status" role="status" aria-live="polite">Aguardando consulta. Nenhum dado foi coletado ainda.</p>
+                    <div class="diagnostics-grid" id="hardware-diagnostics-results" aria-live="polite"></div>
+                    <ul class="diagnostics-warnings" id="hardware-diagnostics-warnings" hidden></ul>
+                </section>
+
+                <section class="enhancement-section" aria-labelledby="enhancements-title">
+                    <div class="enhancement-section__heading">
+                        <div>
+                            <h2 id="enhancements-title">Enhancements</h2>
+                            <p>FPS/frametime e configurações do driver continuam sem fonte validada nesta versão.</p>
+                        </div>
+                    </div>
+                    <div class="enhancement-grid">
+                        <article class="enhancement-card">
+                            <h3>Input lag</h3>
+                            <p>Revisar opções de latência suportadas pelo driver e distinguir Low Latency Mode de NVIDIA Reflex.</p>
+                            <span class="performance-status performance-status--unavailable">Leitura indisponível</span>
+                        </article>
+                        <article class="enhancement-card">
+                            <h3>FPS & estabilidade</h3>
+                            <p>Comparar FPS e frametime com uma fonte de medição identificada. 1% low só será mostrado com amostras suficientes.</p>
+                            <span class="performance-status performance-status--unavailable">Medição não conectada</span>
+                        </article>
+                        <article class="enhancement-card">
+                            <h3>Clareza visual</h3>
+                            <p>Documentar resolução e opções gráficas, além de comparar capturas feitas pelo próprio usuário.</p>
+                            <span class="performance-status performance-status--pending">Fluxo planejado</span>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="enhancement-section" aria-labelledby="nvidia-tools-title">
+                    <div class="enhancement-section__heading">
+                        <div>
+                            <h2 id="nvidia-tools-title">NVIDIA: qual ferramenta faz o quê?</h2>
+                            <p>São ferramentas diferentes e não devem ser tratadas como equivalentes.</p>
+                        </div>
+                    </div>
+                    <div class="nvidia-tools-grid">
+                        <article class="info-panel">
+                            <span class="info-panel__eyebrow">Ferramenta oficial</span>
+                            <h3>NVIDIA Control Panel</h3>
+                            <p>Aplicativo oficial da NVIDIA instalado com o driver. É o caminho recomendado para consultar e ajustar opções de exibição e as configurações 3D que a interface oficial disponibiliza.</p>
+                            <ul>
+                                <li>Interface suportada pelo fabricante.</li>
+                                <li>Permite opções globais ou por programa quando disponíveis.</li>
+                                <li>O Unknown Lab ainda não lê nem altera essas opções.</li>
+                            </ul>
+                        </article>
+                        <article class="info-panel">
+                            <span class="info-panel__eyebrow">Ferramenta de terceiros</span>
+                            <h3>NVIDIA Profile Inspector</h3>
+                            <p>Utilitário de terceiros, não oficial da NVIDIA, que expõe detalhes adicionais de perfis de driver. A disponibilidade e o significado das opções podem variar com o driver.</p>
+                            <ul>
+                                <li>Não substitui o NVIDIA Control Panel nem é uma interface oficial da NVIDIA.</li>
+                                <li>O painel abaixo compara arquivos .nip; importar um arquivo não prova que o driver aplicou as opções.</li>
+                                <li>Alterações só devem ser consideradas após diff, identificação do perfil e verificação posterior.</li>
+                            </ul>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="enhancement-section" aria-labelledby="profile-import-title">
+                    <div class="enhancement-section__heading">
+                        <div>
+                            <h2 id="profile-import-title">Perfil NVIDIA recebido</h2>
+                            <p>Compare um perfil recebido com sua exportação original e inspecione os valores sem aplicá-los.</p>
+                        </div>
+                        <span class="performance-status performance-status--pending">Análise somente leitura</span>
+                    </div>
+                    <div class="profile-review" id="nip-profile-review">
+                        <div class="nip-profile-controls">
+                            <button class="diagnostics-button" id="nip-profile-original" type="button">Selecionar perfil original (opcional)</button>
+                            <span class="nip-profile-file" id="nip-profile-original-name">Nenhum perfil original selecionado</span>
+                            <button class="diagnostics-button" id="nip-profile-proposed" type="button">Selecionar perfil recebido</button>
+                            <span class="nip-profile-file" id="nip-profile-proposed-name">Nenhum perfil recebido selecionado</span>
+                        </div>
+                        <p class="diagnostics-status" id="nip-profile-status" role="status" aria-live="polite">Selecione uma exportação de um único perfil. Para identificar mudanças, carregue também o original correspondente.</p>
+                        <div class="profile-review__summary" id="nip-profile-summary" hidden></div>
+                        <div class="nip-profile-table-wrap" id="nip-profile-table-wrap" hidden>
+                            <table class="nip-profile-table">
+                                <thead>
+                                    <tr>
+                                        <th>Configuração / ID</th>
+                                        <th>Original</th>
+                                        <th>Recebido</th>
+                                        <th>Leitura</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="nip-profile-settings"></tbody>
+                            </table>
+                        </div>
+                        <div class="profile-review__guardrail">
+                            <strong>Importar não é aplicar</strong>
+                            <span>O .nip geralmente não registra o motivo da recomendação nem comprova que o driver aplicou as opções. Valores e descrições são tratados como dados não verificados; esta ferramenta não altera perfis.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="enhancement-section" aria-labelledby="performance-tutorial-title">
+                    <div class="enhancement-section__heading">
+                        <div>
+                            <h2 id="performance-tutorial-title">Tutorial: como demonstrar um ganho real</h2>
+                            <p>Registre sua experiência sem transformar uma diferença isolada em promessa universal.</p>
+                        </div>
+                    </div>
+                    <div class="tutorial-steps">
+                        <article class="tutorial-step">
+                            <span>01</span>
+                            <div><h3>Registre a linha de base</h3><p>Anote mapa/cena, resolução, preset, limite de FPS, driver e condições do teste antes de mudar qualquer opção.</p></div>
+                        </article>
+                        <article class="tutorial-step">
+                            <span>02</span>
+                            <div><h3>Mude uma opção por vez</h3><p>Guarde o valor anterior, a origem da recomendação e o motivo. Evite combinar várias mudanças sem conseguir atribuir o resultado.</p></div>
+                        </article>
+                        <article class="tutorial-step">
+                            <span>03</span>
+                            <div><h3>Repita em condições semelhantes</h3><p>Use a mesma cena e duração. Registre a fonte de FPS/frametime e faça repetições suficientes para avaliar a variação.</p></div>
+                        </article>
+                        <article class="tutorial-step">
+                            <span>04</span>
+                            <div><h3>Compare e explique</h3><p>Mostre valores antes/depois, diferença absoluta e percentual, limitações da amostra e sua avaliação subjetiva separadamente.</p></div>
+                        </article>
+                    </div>
+                    <div class="benchmark-empty">
+                        <strong>Nenhum resultado registrado ainda</strong>
+                        <p>Não há medições neste projeto que comprovem aumento de desempenho. Os resultados do tutorial deverão vir dos seus testes reais; a ferramenta não preencherá ganhos estimados como se fossem resultados.</p>
+                    </div>
+                </section>
             </section>
 
             <!-- MOVEMENT -->
@@ -277,6 +482,7 @@
         </main>
     </div>
 
+    <script src="overlay/crosshair-renderer.js"></script>
     <script src="ui/app.js"></script>
 
 </body>

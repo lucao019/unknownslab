@@ -56,7 +56,15 @@ OBS Browser Source          Electron Control Center
                                 └── Overlays independentes (teclado, mouse, crosshair)
 ```
 
-O overlay de crosshair é uma janela transparente do Electron com canvas 2D. A configuração é enviada pelo Control Center via IPC e salva no perfil local do usuário. A mira só aparece enquanto a janela do PUBG (`TslGame.exe`) está ativa e se oculta ao alternar para qualquer outra janela. O modo de compatibilidade com tela cheia usa uma janela sem bordas; jogos em fullscreen exclusivo podem bloquear overlays externos.
+O overlay de crosshair é uma janela transparente do Electron com canvas 2D. O painel inclui uma prévia do jogo que acompanha estilo, cor, opacidade e tamanho selecionados; arraste a alça do card para reposicioná-lo dentro do painel (a posição fica salva localmente) ou use as setas com a alça selecionada. A configuração da mira é enviada pelo Control Center via IPC e salva no perfil local do usuário. A mira só aparece enquanto a janela do PUBG (`TslGame.exe`) está ativa, acompanha o centro da área de jogo mesmo em modo janela e se oculta ao alternar para qualquer outra janela. Com o jogo fechado, os binds também atualizam a prévia quando o Control Center está em foco. Use `~` / `[` para alternar entre ponto, cruz e círculo, `´` / `]` para percorrer as cores disponíveis e Ctrl + scroll para ajustar o tamanho. O jogo precisa estar em modo janela ou janela sem bordas para que o overlay externo fique visível.
+
+## PUBG Performance Lab
+
+A página **Enhancements** inclui diagnóstico local e monitoramento ao vivo opcional, atualizado a cada dois segundos. No Windows, o LibreHardwareMonitor coleta os sensores disponibilizados pela CPU, GPU, memória, placa-mãe e armazenamento; `nvidia-smi` complementa as leituras NVIDIA, incluindo VRAM e velocidade atual da ventoinha. Se a ponte não iniciar, o monitor usa as APIs locais do Node.js e `nvidia-smi` como fallback e informa essa condição. Sensores sem leitura são mostrados como indisponíveis; dados não são estimados. FPS/frametime exige um provedor de captura de frames compatível e não é inferido a partir do uso da GPU. O monitor é somente leitura: não muda energia, driver nem rotação de ventoinhas. Não há resultados de benchmark pré-carregados; comparações devem usar medições reais com fonte e condições registradas.
+
+O helper do LibreHardwareMonitor é compilado como executável Windows x64 self-contained antes do build (`npm run build`) e incluído em `extraResources`. As DLLs oficiais necessárias e a licença MPL 2.0 estão em `control-center/vendor/LibreHardwareMonitor/v0.9.6/`; o aplicativo não instala serviços nem solicita elevação automática.
+
+O painel permite selecionar arquivos `.nip`/XML do NVIDIA Profile Inspector por uma caixa de diálogo nativa. A análise aceita um perfil por arquivo; exportações com vários perfis são recusadas para evitar misturar configurações. Para identificar diferenças, selecione o original e o recebido; o app mostra nome do perfil, executáveis e valores do XML, sem aplicar mudanças. O formato não informa a justificativa da recomendação e a ausência de uma opção num arquivo não prova que ela foi removida do driver. A comparação é entre arquivos, não entre o XML e as configurações atualmente aplicadas. O **NVIDIA Control Panel** é a interface oficial do fabricante; o **NVIDIA Profile Inspector** é um utilitário de terceiros. Eles não são equivalentes.
 
 ---
 
@@ -67,7 +75,7 @@ O overlay de crosshair é uma janela transparente do Electron com canvas 2D. A c
 | PUBG Stats Overlay | ✅ Implementado | Exibe stats do dia via servidor local |
 | Keyboard Visualizer | ✅ Implementado | Teclas pressionadas em tempo real |
 | Mouse Visualizer | ✅ Implementado | Cliques, scroll e botões laterais do mouse |
-| Crosshair | ✅ Implementado | Mira estática com presets de ponto, cruz e círculo; cor, tamanho, opacidade e modo sem bordas configuráveis e salvos |
+| Crosshair | ✅ Implementado | Mira estática com presets de ponto, cruz e círculo; cor, tamanho e opacidade configuráveis e salvos |
 | Keystroke History | 🔜 Fase 4 | Histórico de inputs em faixa |
 | WASD / Strafe Trainer | 🔜 Fase 5 | Exercícios de movimentação |
 | Session Recorder | 🔜 Fase 6 | Gravação de sessões de input |

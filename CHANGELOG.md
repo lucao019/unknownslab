@@ -9,31 +9,49 @@ Formato: [versão] - data | o que mudou | o que foi testado.
 ## [Unreleased] - 2026-10-21
 
 ### Adicionado
+- Estrutura visual inicial do PUBG Performance Lab com áreas de input lag, FPS, clareza visual, perfis NVIDIA e tutorial de comparação antes/depois.
+- Explicação da diferença entre NVIDIA Control Panel (oficial) e NVIDIA Profile Inspector (terceiros), com estado informativo sem aplicação.
+- Diagnóstico opcional e somente leitura de CPU, RAM, GPUs, monitores e armazenamento, com fontes identificadas e avisos para dados indisponíveis.
+- Monitor local opcional de hardware ao vivo, atualizado a cada dois segundos pela ponte somente leitura do LibreHardwareMonitor, com sensores disponíveis de CPU, GPU, RAM, placa-mãe e armazenamento; `nvidia-smi` complementa a telemetria NVIDIA. Inclui fallback explícito se a ponte não iniciar e indica FPS/sensores indisponíveis sem estimativas.
+- Leitura e comparação local de arquivos `.nip`/XML selecionados pelo diálogo nativo, mostrando perfis, executáveis e valores diferentes sem aplicar alterações; arquivos com vários perfis são recusados em vez de agrupados incorretamente.
 - Crosshair em janela Electron transparente, centralizada, click-through e escondida enquanto o botão direito está pressionado.
 - Presets estáticos de ponto, cruz e círculo, com controles de cor, tamanho e opacidade.
-- Modo opcional de janela sem bordas para uso em jogos em tela cheia compatível.
-- Preservação local do preset, cor, tamanho, opacidade e modo de tela cheia entre execuções.
+- Preservação local do preset, cor, tamanho e opacidade entre execuções.
 - Mira exibida somente quando a janela do PUBG (`TslGame.exe`) está em primeiro plano.
 - Configuração da crosshair encaminhada por IPC seguro e reaplicada após o overlay terminar de carregar.
 - Crosshair adicionada ao catálogo de módulos do Control Center.
+- Atalhos da crosshair: `~` / `[` alternam o tipo, `´` / `]` percorrem a paleta de cores e Ctrl + scroll ajusta o tamanho.
+- Prévia da crosshair no painel acompanha os ajustes e usa o mesmo renderizador do overlay do jogo.
+- Card de prévia arrastável dentro do painel, com posição salva localmente e suporte a teclado.
+- Binds da mira também atualizam a prévia com o jogo fechado quando o Control Center está em foco.
 
 ### Corrigido
+- Removida a opção de tela cheia sem bordas, que não funcionava no PUBG.
+- Scroll vertical habilitado no conteúdo principal do Control Center.
 - Dashboard atualiza a lista e os contadores de módulos ativos e com erro após os toggles.
 - Overlays são fechados ao encerrar a janela principal; instâncias adicionais focam a janela existente.
 - Tamanho da crosshair atualiza durante o arraste do slider.
+- Captura do botão direito da crosshair permanece ativa ao ligar ou desligar os visualizadores de teclado e mouse.
 
 ### Segurança
 - IDs de módulos validados e configuração da crosshair sanitizada no processo principal.
+- Leitura de perfil limitada a arquivos escolhidos pelo usuário, apenas XML de até 2 MB, com DTD/ENTITY rejeitados e nenhum caminho arbitrário exposto ao renderer.
 - URLs externas limitadas a HTTP/HTTPS e deslocamentos de overlay limitados.
 
 ### Ferramentas e validação
 - Electron 34, Canvas 2D, `contextBridge`/IPC, `uiohook-napi` e `electron-builder`.
 - `node --check` nos arquivos JavaScript alterados e teste do monitor de janela ativa: aprovados.
+- Serviço de diagnóstico executado no Windows; validação dos IDs da interface e `git diff --check`: aprovados.
+- Parser de perfil testado com o esquema XML do NVIDIA Profile Inspector: perfil, executável, SettingNameInfo/ID/valor, comparação, recusa de arquivos com vários perfis e rejeição de DTD/ENTITY aprovadas.
+- Monitor ao vivo testado no PC: polling contínuo e encerramento corretos; RTX 2060 retornou uso, temperatura, VRAM e ventoinha; renderização da interface mostrou sensores disponíveis e indisponibilidade de FPS/temperatura da CPU.
+- Dependências npm dentro das faixas compatíveis atualizadas e Electron atualizado para 45.0.0; build Windows x64 descompactado e publicação do helper aprovados. O empacotamento NSIS/portable falhou no compilador NSIS ao mapear 142 MB de memória; os artefatos anteriores foram preservados.
+- `npm audit`: repositório raiz sem vulnerabilidades; Control Center sem avisos altos após atualizar o Electron, mas ainda com 8 moderados na cadeia de ferramentas de build (`electron-builder`/`@electron/get`/`global-agent`/`sprintf-js`).
 - Build Windows x64 (NSIS e portátil): concluída com sucesso.
 - Comportamento do overlay confirmado em execução pelo usuário.
 
 ### Limitação
 - Jogos em fullscreen exclusivo podem impedir overlays externos; usar modo janela sem bordas quando necessário.
+- Leitura de FPS/frametime e temperatura da CPU depende de provedor ainda não disponível neste PC. Controle de ventoinhas não foi habilitado; requer controlador suportado e confirmação explícita para qualquer alteração.
 
 ## [0.6.0] - 2026-10-18
 

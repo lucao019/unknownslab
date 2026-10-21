@@ -7,6 +7,7 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
+    "prebuild": "dotnet publish hardware-sensor-bridge\\HardwareSensorBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o hardware-sensor-bridge\\publish",
     "build": "electron-builder --win --x64"
   },
   "keywords": [],
@@ -15,12 +16,12 @@
     "uiohook-napi": "^1.5.5"
   },
   "devDependencies": {
-    "electron": "^34.5.8",
+    "electron": "^45.0.0",
     "electron-builder": "^26.15.3"
   },
   "allowScripts": {
-    "electron@34.5.8": true,
-    "electron-builder@26.0.12": true,
+    "electron@45.0.0": true,
+    "electron-builder@26.15.3": true,
     "electron-winstaller@5.4.0": true,
     "uiohook-napi@1.5.5": true
   },
@@ -36,6 +37,12 @@
       "src/**/*",
       "node_modules/**/*",
       "!node_modules/.cache/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "hardware-sensor-bridge/publish/HardwareSensorBridge.exe",
+        "to": "hardware-sensor-bridge/HardwareSensorBridge.exe"
+      }
     ],
     "win": {
       "target": [
