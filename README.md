@@ -76,11 +76,10 @@ O helper usa o LibreHardwareMonitor 0.9.6, com licença MPL 2.0 em `control-cent
 
 Esta é uma direção de trabalho, não uma promessa de prazo:
 
-1. **Fechar a distribuição Windows:** resolver a falha de memória do compilador NSIS para voltar a gerar e testar o instalador e o portable com o Electron 45. O build descompactado foi validado; a geração do instalador/portable mais recente ainda não terminou com sucesso neste ambiente.
-2. **Validar fontes para FPS e frametime:** integrar um provedor confiável, se compatível, e exibir claramente limitações e dados ausentes.
-3. **Ampliar a análise de desempenho:** guardar medições antes/depois com fonte, horário e condições para comparar resultados reais.
-4. **Implementar análise de inputs:** histórico, gravação de sessão, intervalos e linha do tempo só serão ativados depois de implementados, revisados quanto à privacidade e testados.
-5. **Evoluir a integração de streaming e treino:** conexão com OBS e exercícios de movimento permanecem planejados, não são recursos funcionais nesta versão.
+1. **Validar fontes para FPS e frametime:** integrar um provedor confiável, se compatível, e exibir claramente limitações e dados ausentes.
+2. **Ampliar a análise de desempenho:** guardar medições antes/depois com fonte, horário e condições para comparar resultados reais.
+3. **Implementar análise de inputs:** histórico, gravação de sessão, intervalos e linha do tempo só serão ativados depois de implementados, revisados quanto à privacidade e testados.
+4. **Evoluir a integração de streaming e treino:** conexão com OBS e exercícios de movimento permanecem planejados, não são recursos funcionais nesta versão.
 
 Controle de ventoinhas não faz parte do monitor: leituras continuam somente observação e nenhum comando de velocidade é enviado.
 
@@ -91,6 +90,8 @@ Controle de ventoinhas não faz parte do monitor: leituras continuam somente obs
 | PUBG Stats Overlay para OBS | Implementado; usa o servidor local de stats |
 | Visualizadores de teclado e mouse | Implementados |
 | Crosshair configurável, binds e prévia arrastável | Implementado |
+| Ajuste e persistência da escala dos overlays de teclado e mouse | Implementado |
+| Tema Cyberpunk Purple, navegação independente e sons opcionais de interface | Implementado |
 | Diagnóstico e sensores de hardware ao vivo | Implementados; dependem dos sensores disponíveis no PC |
 | Comparação de arquivos NVIDIA `.nip`/XML | Implementada; leitura/comparação, sem aplicação |
 | Medição de FPS/frametime | Planejada; provedor ainda não validado |
@@ -135,6 +136,8 @@ npm start
 
 O app distribuído inclui a ponte de sensores; o .NET SDK não é necessário para apenas executar uma versão já compilada. O executável descompactado validado está em `H:\Unknowns-Lab-Build\win-unpacked\Unknowns Lab.exe`.
 
+Em **Settings**, a opção **UI Sounds** ativa ou desativa o som curto ao trocar de página; a preferência fica salva localmente. A escala dos overlays de teclado e mouse também é preservada entre execuções.
+
 ### Build do executável
 
 ```bash
@@ -142,7 +145,15 @@ cd control-center
 npm run build
 ```
 
-O script publica primeiro o helper com `dotnet publish` e depois solicita ao electron-builder o instalador e a versão portátil em `H:\Unknowns-Lab-Build\`. No ambiente de desenvolvimento atual, a publicação do helper e o build descompactado passaram, mas o compilador NSIS falhou ao mapear memória ao gerar os artefatos instaláveis. Consulte **Limitações conhecidas** antes de considerar essa distribuição pronta.
+O script publica primeiro o helper com `dotnet publish` e depois gera o instalador e a versão portátil em `H:\Unknowns-Lab-Build\`. O build Windows x64 mais recente foi concluído com sucesso.
+
+Para substituir atalhos antigos do Unknowns Lab na Área de Trabalho e criar um único atalho para a versão portátil, execute na raiz do repositório:
+
+```powershell
+.\create-shortcut.ps1
+```
+
+Se existir um atalho antigo na Área de Trabalho pública, o Windows pode solicitar permissão de administrador para removê-lo.
 
 ---
 
@@ -174,6 +185,7 @@ O script publica primeiro o helper com `dotnet publish` e depois solicita ao ele
 - **Separação de responsabilidades.** Captura de eventos, processamento, apresentação visual e configuração são camadas distintas.
 - **Privacidade por padrão.** Input logging só captura o necessário, com controle explícito para iniciar e parar. Nenhum dado sensível é registrado.
 - **Ferramentas externas de observação.** O projeto nunca injeta código no PUBG, manipula memória, automatiza recoil ou interfere com anti-cheat.
+- **Apoio de desenvolvimento.** Algumas etapas foram realizadas com apoio do FCC (Free Claude Code); as mudanças foram aplicadas e verificadas nesta base de código.
 
 ---
 
@@ -182,7 +194,6 @@ O script publica primeiro o helper com `dotnet publish` e depois solicita ao ele
 - O servidor de stats depende da PUBG API oficial — sujeito a rate limit e disponibilidade externa.
 - O Control Center não inicia o servidor automaticamente nesta versão — ambos precisam ser iniciados separadamente.
 - FPS/frametime e temperatura da CPU não têm uma fonte válida disponível nesta máquina. O monitor mostra indisponibilidade em vez de estimar valores.
-- A versão atualizada do Electron 45 abre e o build descompactado foi testado. A geração do instalador NSIS e do portable falhou no compilador NSIS com erro de alocação de memória; os artefatos instaláveis anteriores não incluem as atualizações mais recentes.
 - A auditoria npm do Control Center ainda reporta vulnerabilidades moderadas transitivas na cadeia de build (`electron-builder` e dependências). O projeto raiz não reporta vulnerabilidades na última verificação.
 - Executáveis gerados sem certificado de código assinado ativam o SmartScreen no Windows. Solução: clique direito → Propriedades → Desbloquear, ou `Unblock-File` via PowerShell.
 - Fonte Inter carregada via Google Fonts — requer conexão na primeira execução. Fallback: Segoe UI.

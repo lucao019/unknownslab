@@ -17,6 +17,10 @@ body[data-overlay-kind="keyboard"] .overlay-wrap {
     transform-origin: left top;
 }
 
+body[data-overlay-kind="mouse"] .overlay-wrap {
+    transform-origin: right top;
+}
+
 /* ── GRUPO DE BOTÕES — flutua ACIMA do conteúdo ── */
 .overlay-bar {
     position: absolute;

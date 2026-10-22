@@ -25,6 +25,53 @@ const overlayScales = {
     "keyboard-visualizer": 1,
     "mouse-visualizer": 1
 };
+
+const OVERLAY_SCALE_SAVE_DELAY_MS = 250;
+let overlayScaleSaveTimer = null;
+
+function loadOverlayScales() {
+    const configPath = path.join(app.getPath("userData"), "overlay-scales.json");
+    try {
+        const saved = JSON.parse(fs.readFileSync(configPath, "utf8"));
+        if (saved && typeof saved === "object") {
+            const scales = { ...overlayScales };
+            for (const key of Object.keys(overlayScales)) {
+                if (Number.isFinite(saved[key])) {
+                    scales[key] = clamp(saved[key], 0.5, 2.5);
+                }
+            }
+            return scales;
+        }
+    } catch {
+        // Ignora erro (arquivo não existe, JSON inválido, etc.)
+    }
+    return { ...overlayScales };
+}
+
+function writeOverlayScales(scales) {
+    const configPath = path.join(app.getPath("userData"), "overlay-scales.json");
+    try {
+        fs.mkdirSync(path.dirname(configPath), { recursive: true });
+        fs.writeFileSync(configPath, JSON.stringify(scales, null, 2), "utf8");
+    } catch (error) {
+        console.error("Falha ao salvar escalas dos overlays:", error.message);
+    }
+}
+
+function saveOverlayScales(scales) {
+    clearTimeout(overlayScaleSaveTimer);
+    overlayScaleSaveTimer = setTimeout(() => {
+        overlayScaleSaveTimer = null;
+        writeOverlayScales(scales);
+    }, OVERLAY_SCALE_SAVE_DELAY_MS);
+}
+
+function flushOverlayScales() {
+    if (overlayScaleSaveTimer === null) return;
+    clearTimeout(overlayScaleSaveTimer);
+    overlayScaleSaveTimer = null;
+    writeOverlayScales(overlayScales);
+}
 const DEFAULT_CROSSHAIR_CONFIG = {
     style: "cross",
     color: "#00FF00",
@@ -113,6 +160,7 @@ function setOverlayScale(win, id, requestedScale, edge = "") {
     );
     const scale = clamp(requestedScale, 0.5, Math.max(0.5, maxScale));
     overlayScales[id] = scale;
+    saveOverlayScales(overlayScales);
     const bounds = win.getBounds();
     const width = Math.round(base.width * scale);
     const height = Math.round(base.height * scale);
@@ -710,6 +758,7 @@ function updateCrosshairConfig(config, source) {
 app.whenReady().then(() => {
     if (!hasSingleInstanceLock) return;
     currentCrosshairConfig = loadCrosshairConfig();
+    Object.assign(overlayScales, loadOverlayScales());
     createMainWindow();
 });
 
@@ -719,6 +768,8 @@ app.on("second-instance", () => {
     mainWindow.show();
     mainWindow.focus();
 });
+
+app.on("before-quit", flushOverlayScales);
 
 app.on("window-all-closed", async () => {
     if (!hasSingleInstanceLock) return;

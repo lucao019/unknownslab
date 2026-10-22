@@ -473,16 +473,25 @@
                         <p class="page-header__subtitle">Configurações globais do Control Center</p>
                     </div>
                 </div>
-                <p style="color: var(--text-muted); font-size: 13px;">
-                    Configurações individuais de cada módulo ficam acessíveis pelo botão ⚙ do card correspondente.
-                    Esta seção conterá preferências globais em versão futura.
-                </p>
+                <section class="settings-panel" aria-labelledby="ui-sounds-label">
+                    <div class="settings-panel__copy">
+                        <h2 id="ui-sounds-label">UI Sounds</h2>
+                        <p>Som curto ao trocar entre páginas disponíveis. O áudio começa somente após sua primeira interação.</p>
+                    </div>
+                    <label class="settings-toggle" for="ui-sounds-toggle">
+                        <span class="settings-toggle__label">Sons da interface</span>
+                        <input id="ui-sounds-toggle" type="checkbox" role="switch" checked>
+                        <span class="settings-toggle__track" aria-hidden="true"></span>
+                    </label>
+                    <p class="settings-panel__status" id="ui-sounds-status" role="status" aria-live="polite"></p>
+                </section>
             </section>
 
         </main>
     </div>
 
     <script src="overlay/crosshair-renderer.js"></script>
+    <script src="ui/components/organic-menu.js"></script>
     <script src="ui/app.js"></script>
 
 </body>

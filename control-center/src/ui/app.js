@@ -586,14 +586,26 @@ function updateDashboard() {
 function navigate(pageId) {
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
     document.querySelectorAll(".sidebar__nav-link").forEach(l => l.classList.remove("active"));
+    document.querySelectorAll(".organic-menu__item").forEach(l => l.classList.remove("organic-menu__item--active"));
 
     const page = document.getElementById(`page-${pageId}`);
     if (page) page.classList.add("active");
 
     const link = document.querySelector(`[data-page="${pageId}"]`);
     if (link) link.classList.add("active");
+
+    // Sincroniza menu orgânico via API global
+    window.organicMenuAPI?.setActivePage(pageId);
 }
 
+// Inicializa menu orgânico (substitui a sidebar padrão)
+// O script organic-menu.js já roda e expõe window.organicMenuAPI
+// Chamamos initOrganicMenu se estiver disponível globalmente
+if (typeof window.initOrganicMenu === "function") {
+    window.initOrganicMenu(navigate);
+}
+
+// Fallback: listeners para links antigos da sidebar (se existirem)
 document.querySelectorAll(".sidebar__nav-link").forEach(link => {
     link.addEventListener("click", (e) => {
         e.preventDefault();

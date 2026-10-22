@@ -1,13 +1,50 @@
 /* =========================================================
    OVERLAY CONTROLS
+   Controles de UI para overlays (keyboard/mouse):
+   - drag via PIP / botão mover
+   - hide/show
+   - close
+   - resize transparente (edges + corners) com pointer events
 ========================================================= */
+
+/**
+ * @typedef {Object} ResizeEdge
+ * @property {string} edge - Identificador da borda/canto (ex: "top", "bottom-right")
+ * @property {number} x - Direção horizontal (-1, 0, 1)
+ * @property {number} y - Direção vertical (-1, 0, 1)
+ * @property {string} cursor - CSS cursor para o handle
+ */
+
+/**
+ * @typedef {Object} ResizeStartState
+ * @property {number} x - screenX inicial
+ * @property {number} y - screenY inicial
+ * @property {number} width - innerWidth inicial
+ * @property {number} height - innerHeight inicial
+ * @property {number} directionX - direção horizontal do handle
+ * @property {number} directionY - direção vertical do handle
+ */
+
+/**
+ * @typedef {Object} OverlayAPI
+ * @property {(dx: number, dy: number) => void} moveWindow
+ * @property {(width: number, height: number, edge: string) => void} resizeWindow
+ * @property {() => void} closeOverlay
+ * @property {(cb: (event: {type: string, label: string, keycode: number, ts: number}) => void) => void} onKeyEvent
+ * @property {(cb: (event: {type: string, button: number, x: number, y: number, ts: number}) => void) => void} onMouseEvent
+ */
 
 (function () {
 
+    /** @type {HTMLElement|null} */
     const wrap     = document.querySelector(".overlay-wrap");
+    /** @type {HTMLElement|null} */
     const pip      = document.querySelector(".overlay-pip");
+    /** @type {HTMLElement|null} */
     const dragBtn  = document.querySelector("[data-action='drag']");
+    /** @type {HTMLElement|null} */
     const hideBtn  = document.querySelector("[data-action='hide']");
+    /** @type {HTMLElement|null} */
     const closeBtn = document.querySelector("[data-action='close']");
 
     /* ── GUARD ── */
@@ -109,8 +146,11 @@
         dragBtn.addEventListener("click", (e) => e.stopPropagation());
     }
 
+    /** @type {number} */
     const baseWidth = Number(document.body.dataset.baseWidth);
+    /** @type {number} */
     const baseHeight = Number(document.body.dataset.baseHeight);
+    /** @type {ResizeEdge[]} */
     const resizeEdges = [
         { edge: "top", x: 0, y: -1, cursor: "ns-resize" },
         { edge: "right", x: 1, y: 0, cursor: "ew-resize" },
@@ -121,8 +161,12 @@
         { edge: "bottom-right", x: 1, y: 1, cursor: "nwse-resize" },
         { edge: "bottom-left", x: -1, y: 1, cursor: "nesw-resize" }
     ];
+    /** @type {ResizeStartState|null} */
     let resizeStart = null;
 
+    /**
+     * Atualiza a variável CSS --overlay-scale baseada no tamanho atual da janela
+     */
     function updateScale() {
         const scale = Math.min(window.innerWidth / baseWidth, window.innerHeight / baseHeight);
         document.documentElement.style.setProperty("--overlay-scale", String(scale));
@@ -131,14 +175,15 @@
     window.addEventListener("resize", updateScale);
     updateScale();
 
-    resizeEdges.forEach(({ edge, x, y, cursor }) => {
+    resizeEdges.forEach((/** @type {ResizeEdge} */ { edge, x, y, cursor }) => {
+        /** @type {HTMLDivElement} */
         const handle = document.createElement("div");
         handle.className = `overlay-resize-handle overlay-resize-handle--${edge}`;
         handle.setAttribute("aria-hidden", "true");
         handle.style.cursor = cursor;
         document.body.appendChild(handle);
 
-        handle.addEventListener("pointerdown", (e) => {
+        handle.addEventListener("pointerdown", (/** @type {PointerEvent} */ e) => {
             if (e.button !== 0) return;
             e.preventDefault();
             e.stopPropagation();
@@ -150,16 +195,17 @@
                 directionX: x,
                 directionY: y
             };
-            wrap.classList.add("is-resizing");
+            wrap?.classList.add("is-resizing");
             handle.setPointerCapture(e.pointerId);
         });
 
-        handle.addEventListener("pointermove", (e) => {
+        handle.addEventListener("pointermove", (/** @type {PointerEvent} */ e) => {
             if (!resizeStart) return;
             const widthScale = (resizeStart.width +
                 (e.screenX - resizeStart.x) * resizeStart.directionX) / baseWidth;
             const heightScale = (resizeStart.height +
                 (e.screenY - resizeStart.y) * resizeStart.directionY) / baseHeight;
+            /** @type {number[]} */
             const activeScales = [];
             if (resizeStart.directionX) activeScales.push(widthScale);
             if (resizeStart.directionY) activeScales.push(heightScale);
@@ -173,10 +219,13 @@
             );
         });
 
+        /**
+         * @param {PointerEvent} e
+         */
         function stopResize(e) {
             if (!resizeStart) return;
             resizeStart = null;
-            wrap.classList.remove("is-resizing");
+            wrap?.classList.remove("is-resizing");
             if (handle.hasPointerCapture(e.pointerId)) handle.releasePointerCapture(e.pointerId);
         }
 

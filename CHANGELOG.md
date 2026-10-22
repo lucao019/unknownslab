@@ -6,7 +6,15 @@ Formato: [versão] - data | o que mudou | o que foi testado.
 
 ---
 
-## [Unreleased] - 2026-10-21
+## [Unreleased] - 2026-10-22
+
+### Atualizado
+- Redesign do Control Center para o tema Cyberpunk Purple, com paleta centralizada em variáveis CSS e aplicação consistente nas telas e componentes.
+- Sidebar com indicadores de navegação independentes, destaque roxo animado somente no item ativo e suporte a movimento reduzido.
+- Opção **UI Sounds** em Settings: som curto gerado pela Web Audio API somente em trocas efetivas de página; preferência persistida localmente.
+- Escala dos overlays de teclado e mouse salva localmente com gravação agrupada e limites seguros; redimensionamento do overlay do mouse mantém a âncora visual correta.
+- Script `create-shortcut.ps1` remove atalhos antigos do Unknowns Lab nas áreas de trabalho pessoal e pública antes de criar um atalho para a versão portátil.
+- FCC (Free Claude Code) foi usado como apoio em algumas etapas de desenvolvimento; as alterações foram verificadas no projeto.
 
 ### Adicionado
 - Estrutura visual inicial do PUBG Performance Lab com áreas de input lag, FPS, clareza visual, perfis NVIDIA e tutorial de comparação antes/depois.
@@ -39,14 +47,16 @@ Formato: [versão] - data | o que mudou | o que foi testado.
 - URLs externas limitadas a HTTP/HTTPS e deslocamentos de overlay limitados.
 
 ### Ferramentas e validação
-- Electron 34, Canvas 2D, `contextBridge`/IPC, `uiohook-napi` e `electron-builder`.
+- Electron 45, Canvas 2D, `contextBridge`/IPC, `uiohook-napi` e `electron-builder`.
 - `node --check` nos arquivos JavaScript alterados e teste do monitor de janela ativa: aprovados.
 - Serviço de diagnóstico executado no Windows; validação dos IDs da interface e `git diff --check`: aprovados.
 - Parser de perfil testado com o esquema XML do NVIDIA Profile Inspector: perfil, executável, SettingNameInfo/ID/valor, comparação, recusa de arquivos com vários perfis e rejeição de DTD/ENTITY aprovadas.
 - Monitor ao vivo testado no PC: polling contínuo e encerramento corretos; RTX 2060 retornou uso, temperatura, VRAM e ventoinha; renderização da interface mostrou sensores disponíveis e indisponibilidade de FPS/temperatura da CPU.
-- Dependências npm dentro das faixas compatíveis atualizadas e Electron atualizado para 45.0.0; build Windows x64 descompactado e publicação do helper aprovados. O empacotamento NSIS/portable falhou no compilador NSIS ao mapear 142 MB de memória; os artefatos anteriores foram preservados.
+- Dependências npm dentro das faixas compatíveis atualizadas e Electron atualizado para 45.0.0; build Windows x64 descompactado e publicação do helper aprovados.
 - `npm audit`: repositório raiz sem vulnerabilidades; Control Center sem avisos altos após atualizar o Electron, mas ainda com 8 moderados na cadeia de ferramentas de build (`electron-builder`/`@electron/get`/`global-agent`/`sprintf-js`).
-- Build Windows x64 (NSIS e portátil): concluída com sucesso.
+- `npm run build`: build Windows x64, incluindo NSIS e versão portátil, concluído com sucesso.
+- `node --check` nos arquivos JavaScript alterados e `git diff --check`: aprovados.
+- Interface conferida no navegador: navegação por clique/teclado, item ativo, ausência de linhas conectando os indicadores, preferência de som após recarregar e layout em viewport estreita aprovados. O fluxo de áudio foi validado com AudioContext simulado; a saída audível no app empacotado não foi medida.
 - Comportamento do overlay confirmado em execução pelo usuário.
 
 ### Limitação

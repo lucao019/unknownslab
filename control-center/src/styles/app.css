@@ -28,9 +28,9 @@ body {
     align-items: flex-start;
     gap: var(--space-3);
     padding: var(--space-4);
-    border: 1px solid rgba(245, 197, 24, 0.24);
+    border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
-    background: rgba(245, 197, 24, 0.06);
+    background: var(--accent-dim);
 }
 
 .performance-notice__dot {
@@ -40,7 +40,7 @@ body {
     flex: 0 0 auto;
     border-radius: 50%;
     background: var(--accent);
-    box-shadow: 0 0 10px rgba(245, 197, 24, 0.35);
+    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 .performance-notice strong {
@@ -148,8 +148,8 @@ body {
 }
 
 .performance-status--pending {
-    border-color: rgba(245, 197, 24, 0.25);
-    background: rgba(245, 197, 24, 0.07);
+    border-color: var(--border-default);
+    background: var(--accent-dim);
     color: var(--accent);
 }
 
@@ -180,7 +180,7 @@ body {
 
 .diagnostics-button:hover:not(:disabled) {
     border-color: var(--accent);
-    background: rgba(245, 197, 24, 0.08);
+    background: var(--accent-dim);
 }
 
 .diagnostics-button:disabled {
@@ -255,9 +255,9 @@ body {
 .diagnostics-warnings {
     margin: 0;
     padding: var(--space-3) var(--space-4);
-    border: 1px solid rgba(245, 197, 24, 0.24);
+    border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
-    background: rgba(245, 197, 24, 0.06);
+    background: var(--accent-dim);
 }
 
 .diagnostics-warnings[hidden] {
@@ -342,7 +342,7 @@ body {
     gap: 4px var(--space-2);
     padding: var(--space-3);
     border-left: 2px solid var(--accent);
-    background: rgba(245, 197, 24, 0.05);
+    background: var(--accent-dim);
     font-size: var(--text-sm);
 }
 
@@ -429,7 +429,7 @@ body {
 
 .nip-profile-table__added td:last-child,
 .nip-profile-table__removed td:last-child {
-    color: #ffbd75;
+    color: var(--accent-strong);
 }
 
 .nip-profile-table__empty {
@@ -735,5 +735,748 @@ body {
     }
     100% {
         filter: brightness(1);
+    }
+}
+
+/* =========================================================
+   ORGANIC MENU — navegação de ação com identidade Unknowns Lab
+========================================================= */
+
+.organic-menu {
+    --organic-rail-width: 88px;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #030304;
+    border-right: 1px solid var(--border-subtle);
+    overflow: hidden;
+    font-family: var(--font-ui);
+}
+
+.organic-menu__header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 82px;
+    padding: 14px 22px 12px 66px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: linear-gradient(105deg, rgba(var(--accent-rgb), 0.08), transparent 72%);
+}
+
+.organic-menu__brand-mark {
+    position: absolute;
+    left: 24px;
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(var(--accent-rgb), 0.72);
+    transform: rotate(45deg);
+    box-shadow: 0 0 12px var(--accent-glow), inset 0 0 6px rgba(var(--accent-rgb), 0.16);
+}
+
+.organic-menu__brand-mark::after {
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
+    content: "";
+}
+
+.organic-menu__brand-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.3;
+}
+
+.organic-menu__brand-copy strong {
+    color: var(--text-primary);
+    font-size: 11px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.16em;
+}
+
+.organic-menu__brand-copy small {
+    color: var(--text-muted);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+}
+
+/* SVG fica em uma faixa própria, à esquerda dos rótulos. */
+.organic-menu__svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: var(--organic-rail-width);
+    height: 100%;
+    overflow: visible;
+    opacity: 1;
+}
+
+.organic-menu__items {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 30px 16px 72px 82px;
+    gap: 0;
+    pointer-events: none;
+}
+
+.organic-menu__list-item {
+    list-style: none;
+    pointer-events: auto;
+}
+
+.organic-menu__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: clamp(42px, 6vh, 62px);
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-left: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: var(--weight-semibold);
+    text-align: left;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        color var(--transition-fast),
+        background var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.organic-menu__item:hover:not(.organic-menu__item--unavailable),
+.organic-menu__item:focus-visible:not(.organic-menu__item--unavailable),
+.organic-menu__item--preview:not(.organic-menu__item--unavailable) {
+    border-color: transparent;
+    background: transparent;
+    color: #f4c66f;
+    text-shadow: none;
+}
+
+.organic-menu__item:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+.organic-menu__item--active {
+    border-color: transparent;
+    background: transparent;
+    color: #fff4d8;
+    font-weight: var(--weight-bold);
+    text-shadow: none;
+}
+
+.organic-menu__item--active:hover,
+.organic-menu__item--active:focus-visible {
+    border-color: transparent;
+    background: transparent;
+    color: #fff8e9;
+}
+
+.organic-menu__item--unavailable {
+    opacity: 0.58;
+    cursor: not-allowed;
+    color: var(--text-muted);
+}
+
+.organic-menu__item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: inherit;
+    opacity: 0.72;
+    transition: color var(--transition-fast), opacity var(--transition-fast), filter var(--transition-fast);
+}
+
+.organic-menu__item--preview .organic-menu__item-icon {
+    color: #f4c66f;
+    opacity: 1;
+}
+
+.organic-menu__item--active .organic-menu__item-icon {
+    opacity: 1;
+    color: var(--accent-strong);
+    filter: drop-shadow(0 0 4px var(--accent-glow));
+}
+
+.organic-menu__item-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.organic-menu__footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-base);
+    z-index: 2;
+    text-align: center;
+    font-size: 10px;
+    color: rgba(139, 139, 158, 0.55);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
+}
+
+.organic-menu__footer strong {
+    color: var(--accent-strong);
+    font-weight: var(--weight-semibold);
+}
+
+.organic-menu__path {
+    opacity: 0;
+}
+
+.organic-menu__path-core {
+    opacity: 0;
+}
+
+.organic-menu__dna {
+    fill: none;
+    pointer-events: none;
+}
+
+.organic-menu__dna-segment {
+    opacity: 0.86;
+}
+
+.organic-menu__dna-strand {
+    fill: none;
+    stroke-width: 0.95;
+    stroke-linecap: round;
+    opacity: 0.68;
+}
+
+.organic-menu__dna-strand--left {
+    stroke: rgba(143, 183, 177, 0.62);
+}
+
+.organic-menu__dna-strand--right {
+    stroke: rgba(138, 161, 184, 0.56);
+}
+
+.organic-menu__dna-signal {
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-dasharray: 16 84;
+    stroke-dashoffset: 100;
+    filter: drop-shadow(0 0 2px currentColor);
+    animation: organic-dna-signal 5.2s linear infinite;
+    animation-delay: var(--segment-delay, 0s);
+}
+
+.organic-menu__dna-signal--left {
+    color: #b8ded2;
+    stroke: currentColor;
+    opacity: 0.82;
+}
+
+.organic-menu__dna-signal--right {
+    color: #bdcfe0;
+    stroke: currentColor;
+    stroke-dashoffset: 50;
+    animation-duration: 6.4s;
+    animation-direction: reverse;
+    opacity: 0.68;
+}
+
+.organic-menu__dna-rung {
+    fill: none;
+    stroke: rgba(151, 177, 176, 0.32);
+    stroke-width: 0.75;
+    stroke-linecap: round;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: organic-dna-synapse 2.8s ease-in-out infinite;
+    animation-delay: var(--rung-delay, 0s);
+}
+
+.organic-menu__dna-rung[data-active="true"],
+.organic-menu__dna-rung[data-preview="true"] {
+    stroke: rgba(var(--accent-rgb), 0.72);
+    stroke-width: 1.1;
+}
+
+.organic-menu__network {
+    fill: none;
+    pointer-events: none;
+}
+
+.organic-menu__dendrite {
+    fill: none;
+    stroke: rgba(157, 176, 160, 0.12);
+    stroke-width: 0.9;
+    stroke-linecap: round;
+    transition: stroke 260ms ease, stroke-width 260ms ease, opacity 260ms ease;
+}
+
+.organic-menu__dendrite--twig {
+    stroke: rgba(157, 176, 160, 0.08);
+    stroke-width: 0.7;
+}
+
+.organic-menu__synapse {
+    fill: rgba(176, 193, 170, 0.2);
+    transition: fill 260ms ease, opacity 260ms ease;
+}
+
+.organic-menu__synaptic-link {
+    fill: none;
+    stroke: rgba(143, 168, 154, 0.07);
+    stroke-width: 0.7;
+    stroke-dasharray: 1 3;
+    stroke-linecap: round;
+    transition: stroke 260ms ease, opacity 260ms ease;
+}
+
+.organic-menu__neuron[data-active="true"] .organic-menu__dendrite,
+.organic-menu__neuron[data-preview="true"] .organic-menu__dendrite {
+    stroke: rgba(var(--accent-rgb), 0.76);
+    stroke-width: 1.1;
+    filter: drop-shadow(0 0 3px var(--accent-glow));
+}
+
+.organic-menu__neuron[data-active="true"] .organic-menu__dendrite--twig,
+.organic-menu__neuron[data-preview="true"] .organic-menu__dendrite--twig {
+    stroke: rgba(255, 194, 105, 0.54);
+}
+
+.organic-menu__neuron[data-active="true"] .organic-menu__synapse,
+.organic-menu__neuron[data-preview="true"] .organic-menu__synapse {
+    fill: #ffe0ad;
+}
+
+.organic-menu__synaptic-link[data-active="true"],
+.organic-menu__synaptic-link[data-preview="true"] {
+    stroke: rgba(255, 176, 74, 0.52);
+}
+
+@keyframes organic-dna-signal {
+    from {
+        stroke-dashoffset: 100;
+    }
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes organic-dna-synapse {
+    0%, 100% {
+        opacity: 0.36;
+    }
+    50% {
+        opacity: 0.86;
+    }
+}
+
+/* Linha de conexão entre nó ativo e nó em preview — curva lateral âmbar */
+.organic-menu__path-connection {
+    opacity: 0;
+    transition: opacity 220ms ease, stroke-width 220ms ease;
+}
+
+.organic-menu__svg[data-has-preview="true"] .organic-menu__path-connection {
+    opacity: 0.98;
+}
+
+/* Nó base — discreto, quase silhueta na linha */
+.organic-menu__node {
+    r: var(--node-radius, 4px);
+    fill: url("#node-default");
+    stroke: rgba(163, 185, 165, 0.24);
+    stroke-width: 0.8;
+    filter: drop-shadow(0 0 2px rgba(174, 192, 170, 0.08));
+    transition: r 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94), fill 300ms ease, stroke 300ms ease, stroke-width 300ms ease;
+}
+
+/* ============================================================
+   ESTADO ATIVO (página selecionada) — hierarquia máxima
+============================================================ */
+.organic-menu__node-group[data-active="true"] .organic-menu__node {
+    r: 12px;
+    fill: #ffad45;
+    stroke: rgba(255, 235, 193, 0.82);
+    stroke-width: 1.4px;
+    filter: drop-shadow(0 0 12px rgba(255, 115, 24, 0.94));
+}
+
+.organic-menu__node-group[data-active="true"] .organic-menu__node-glow {
+    opacity: 0.85 !important;
+    r: 48px;
+    transition: opacity 350ms ease, r 350ms ease;
+}
+
+/* ============================================================
+   ESTADO PREVIEW/HOVER — secundário, âmbar suave
+============================================================ */
+.organic-menu__node-group[data-preview="true"] .organic-menu__node {
+    r: 8px;
+    fill: #ffd276;
+    stroke: #fff2c1;
+    stroke-width: 1.2px;
+    filter: drop-shadow(0 0 9px rgba(255, 183, 65, 0.9));
+}
+
+.organic-menu__node-group[data-preview="true"] .organic-menu__node-glow-hover {
+    opacity: 0.75 !important;
+    transition: opacity 200ms ease;
+}
+
+/* Elementos decorativos — transições base */
+.organic-menu__node-glow,
+.organic-menu__node-glow-hover {
+    transition: opacity var(--transition-fast);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .organic-menu *,
+    .organic-menu *::before,
+    .organic-menu *::after,
+    .organic-menu__item,
+    .organic-menu__node,
+    .organic-menu__node-glow,
+    .organic-menu__node-glow-hover,
+    .organic-menu__dendrite,
+    .organic-menu__synapse,
+    .organic-menu__synaptic-link,
+    .organic-menu__item::before {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+@media (max-width: 700px) {
+    :root {
+        --sidebar-width: 224px;
+    }
+
+    .organic-menu {
+        --organic-rail-width: 76px;
+    }
+
+    .organic-menu__items {
+        padding-right: 10px;
+        padding-left: 72px;
+    }
+
+    .organic-menu__item {
+        min-height: clamp(40px, 6vh, 58px);
+        padding: 7px 8px;
+        gap: 9px;
+        font-size: 11px;
+    }
+
+    .organic-menu__item-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .organic-menu__footer {
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 500px) {
+    :root {
+        --sidebar-width: 196px;
+    }
+
+    .organic-menu {
+        --organic-rail-width: 68px;
+    }
+
+    .organic-menu__items {
+        padding-right: 7px;
+        padding-left: 62px;
+    }
+
+    .organic-menu__item {
+        min-height: clamp(38px, 6vh, 54px);
+        padding-right: 6px;
+        padding-left: 7px;
+        gap: 7px;
+        font-size: 10px;
+    }
+
+    .organic-menu__header {
+        padding-right: 8px;
+        padding-left: 48px;
+    }
+
+    .organic-menu__brand-mark { left: 17px; }
+    .organic-menu__brand-copy strong {
+        font-size: 9px;
+        letter-spacing: 0.1em;
+    }
+
+    .organic-menu__brand-copy small {
+        font-size: 8px;
+        letter-spacing: 0.14em;
+    }
+}
+
+/* Cyberpunk Purple navigation and global settings */
+.organic-menu {
+    background: var(--bg-base);
+    border-right: 1px solid var(--border-subtle);
+}
+
+.organic-menu__header {
+    border-bottom-color: var(--border-subtle);
+    background: linear-gradient(105deg, rgba(var(--accent-rgb), 0.08), transparent 72%);
+}
+
+.organic-menu__brand-mark {
+    border-color: rgba(var(--accent-rgb), 0.72);
+    box-shadow: 0 0 12px var(--accent-glow), inset 0 0 6px rgba(var(--accent-rgb), 0.16);
+}
+
+.organic-menu__brand-mark::after {
+    background: var(--accent-hover);
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.organic-menu__svg {
+    filter: none !important;
+}
+
+.organic-menu__path,
+.organic-menu__path-core,
+.organic-menu__path-connection,
+.organic-menu__dna,
+.organic-menu__network {
+    display: none !important;
+}
+
+.organic-menu__node-group {
+    transition: transform var(--transition-fast) !important;
+}
+
+.organic-menu__node {
+    fill: var(--bg-overlay) !important;
+    stroke: var(--text-muted) !important;
+    stroke-width: 1 !important;
+    r: 4px !important;
+    transition: fill var(--transition-fast), stroke var(--transition-fast), r var(--transition-fast);
+}
+
+.organic-menu__node-glow,
+.organic-menu__node-glow-hover {
+    fill: var(--accent-hover) !important;
+    filter: none !important;
+    opacity: 0 !important;
+    transition: opacity var(--transition-fast);
+}
+
+.organic-menu__node-glow {
+    r: 10px !important;
+}
+
+.organic-menu__node-glow-hover {
+    r: 8px !important;
+}
+
+.organic-menu__node-group[data-preview="true"] .organic-menu__node {
+    fill: var(--accent) !important;
+    stroke: var(--accent-hover) !important;
+}
+
+.organic-menu__node-group[data-preview="true"] .organic-menu__node-glow-hover {
+    opacity: 0.16 !important;
+}
+
+.organic-menu__node-group[data-active="true"] .organic-menu__node {
+    fill: var(--accent-hover) !important;
+    stroke: var(--accent-strong) !important;
+    filter: drop-shadow(0 0 4px var(--accent));
+}
+
+.organic-menu__node-group[data-active="true"] .organic-menu__node-glow {
+    opacity: 0.18 !important;
+    animation: energy-core-pulse 2.4s ease-in-out infinite;
+}
+
+.organic-menu__item {
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    text-transform: none;
+    transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+}
+
+.organic-menu__item:hover:not(.organic-menu__item--unavailable),
+.organic-menu__item:focus-visible:not(.organic-menu__item--unavailable),
+.organic-menu__item--preview:not(.organic-menu__item--unavailable) {
+    background: rgba(var(--accent-rgb), 0.08);
+    color: var(--accent-strong);
+    text-shadow: none;
+    transform: translateX(2px);
+}
+
+.organic-menu__item:focus-visible {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+.organic-menu__item--active {
+    border-left: 2px solid var(--accent-hover);
+    background: rgba(var(--accent-rgb), 0.12);
+    color: var(--text-primary);
+    text-shadow: none;
+}
+
+.organic-menu__item--active:hover,
+.organic-menu__item--active:focus-visible {
+    background: rgba(var(--accent-rgb), 0.16);
+    color: var(--text-primary);
+}
+
+.organic-menu__item--active .organic-menu__item-icon {
+    color: var(--accent-strong);
+    filter: drop-shadow(0 0 4px var(--accent-glow));
+}
+
+.organic-menu__footer {
+    border-top-color: var(--border-subtle);
+    background: var(--bg-base);
+}
+
+.organic-menu__footer strong {
+    color: var(--accent-strong);
+}
+
+.settings-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    max-width: 720px;
+    padding: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+}
+
+.settings-panel__copy h2 {
+    color: var(--text-primary);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+}
+
+.settings-panel__copy p,
+.settings-toggle__label {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.settings-panel__copy p {
+    max-width: 460px;
+    margin-top: var(--space-1);
+}
+
+.settings-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    cursor: pointer;
+}
+
+.settings-toggle input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.settings-toggle__track {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-full);
+    background: var(--bg-overlay);
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.settings-toggle__track::after {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: var(--radius-full);
+    background: var(--text-muted);
+    content: "";
+    transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+.settings-toggle input:checked + .settings-toggle__track {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+}
+
+.settings-toggle input:checked + .settings-toggle__track::after {
+    background: var(--accent-strong);
+    transform: translateX(18px);
+}
+
+.settings-toggle input:focus-visible + .settings-toggle__track {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 3px;
+}
+
+.settings-panel__status {
+    flex-basis: 100%;
+    color: var(--state-error-text);
+    font-size: var(--text-xs);
+}
+
+@keyframes energy-core-pulse {
+    0%, 100% { opacity: 0.12; transform: scale(0.94); }
+    50% { opacity: 0.24; transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .titlebar__brand-dot,
+    .module-card--starting .module-card__status-dot,
+    .module-card--stopping .module-card__status-dot,
+    .page {
+        animation: none !important;
+    }
+
+    .organic-menu__node-group[data-active="true"] .organic-menu__node-glow {
+        animation: none !important;
     }
 }
