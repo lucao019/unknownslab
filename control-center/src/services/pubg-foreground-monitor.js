@@ -55,7 +55,7 @@ public static class ForegroundWindow {
         Point bottomRight = new Point { X = rect.Right, Y = rect.Bottom };
         if (!ClientToScreen(window, ref topLeft) || !ClientToScreen(window, ref bottomRight)) return "";
 
-        return String.Format("{0},{1},{2},{3}", topLeft.X, topLeft.Y,
+        return String.Format("{0}|{1}|{2}|{3}", topLeft.X, topLeft.Y,
             bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
     }
 }
